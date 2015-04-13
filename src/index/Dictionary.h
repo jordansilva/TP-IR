@@ -18,7 +18,7 @@ class Dictionary {
 public:
 	Dictionary();
 	virtual ~Dictionary();
-	int addTerm(string term);
+	int AddTerm(string term);
 private:
 	unordered_map<string, int> terms;
 };

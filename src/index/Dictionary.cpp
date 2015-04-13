@@ -16,7 +16,7 @@ Dictionary::~Dictionary() {
 	// TODO Auto-generated destructor stub
 }
 
-int Dictionary::addTerm(string term) {
+int Dictionary::AddTerm(string term) {
 	unordered_map<string, int>::iterator it = terms.find(term);
 	if (it == terms.end()) {
 		int& id = terms[term];

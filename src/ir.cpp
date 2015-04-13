@@ -11,7 +11,7 @@
 #include "index/IndexDocument.h"
 #include "index/Indexer.h"
 
-#define DIRECTORY "/home/jordan/documents/ir/ir/irCollection"
+#define DIRECTORY "/home/jordan/documents/ir/irCollection"
 #define MAPFILE "index.txt"
 
 using namespace std;
@@ -25,14 +25,15 @@ int main(int argc, const char * argv[]) {
 	Document doc;
 	doc.clear();
 
-	Indexer indexer;
+	Indexer indexer(".");
 	while (reader.getNextDocument(doc)) {
 
-		IndexDocument document(doc);
-		indexer.addDocument(document);
+		IndexDocument *document = new IndexDocument(doc);
+		indexer.AddDocument(document);
 		//cout << parser.process(index.getText()) << endl;
 	}
 
+	cin.get();
 	return 0;
 }
 

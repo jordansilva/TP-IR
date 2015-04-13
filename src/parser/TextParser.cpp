@@ -8,7 +8,7 @@
 #include "TextParser.h"
 
 TextParser::TextParser() {
-	// TODO Auto-generated constructor stub
+
 
 }
 
