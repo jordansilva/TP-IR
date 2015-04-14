@@ -20,7 +20,7 @@ public:
 	virtual ~Dictionary();
 	int AddTerm(string term);
 private:
-	unordered_map<string, int> terms;
+	unordered_map<string, int>* terms;
 };
 
 #endif /* DICTIONARY_H_ */

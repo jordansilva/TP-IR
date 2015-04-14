@@ -16,6 +16,7 @@
 #include "IndexTerm.h"
 
 class Indexer {
+
 	WriterHelper* writer;
 	TextParser parser;
 	Dictionary dictionary;
@@ -27,7 +28,6 @@ public:
 	void AddDocument(IndexDocument *document);
 	Dictionary getDictionary();
 	unsigned long getDocumentsIndexedSize();
-
 };
 
 inline Dictionary Indexer::getDictionary() {

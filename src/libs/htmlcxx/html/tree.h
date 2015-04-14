@@ -1544,10 +1544,12 @@ tree<T, tree_node_allocator>::pre_order_iterator::pre_order_iterator(const sibli
       ++(*this);
       }
    }
+#include <iostream>
 
 template <class T, class tree_node_allocator>
 typename tree<T, tree_node_allocator>::pre_order_iterator& tree<T, tree_node_allocator>::pre_order_iterator::operator++()
    {
+
    assert(this->node!=0);
    if(!this->skip_current_children_ && this->node->first_child != 0) {
       this->node=this->node->first_child;

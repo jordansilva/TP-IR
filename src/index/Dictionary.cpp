@@ -8,8 +8,8 @@
 #include "Dictionary.h"
 
 Dictionary::Dictionary() {
-	// TODO Auto-generated constructor stub
-
+	cout << "Construct dictionary" << endl;
+	terms = new unordered_map<string, int>();
 }
 
 Dictionary::~Dictionary() {
@@ -17,10 +17,11 @@ Dictionary::~Dictionary() {
 }
 
 int Dictionary::AddTerm(string term) {
-	unordered_map<string, int>::iterator it = terms.find(term);
-	if (it == terms.end()) {
-		int& id = terms[term];
-		id = terms.size();
+	unordered_map<string, int>::iterator it = terms->find(term);
+
+	if (it == terms->end()) {
+		int id = terms->size()+1;
+		terms->insert(make_pair(term, id));
 		return id;
 	} else
 		return it->second;

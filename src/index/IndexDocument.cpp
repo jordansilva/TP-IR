@@ -18,12 +18,12 @@ IndexDocument::~IndexDocument() {
 
 void IndexDocument::ReadDocument(Document doc) {
 	HTML::ParserDom parser;
+
 	tree<HTML::Node> dom = parser.parseTree(doc.getText());
 	tree<HTML::Node>::iterator it = dom.begin();
 	tree<HTML::Node>::iterator end = dom.end();
 
 	bool started = false;
-
 	for (; it != end; ++it) {
 		if (it.node != 0 && dom.parent(it) != NULL) {
 			//skip response header html
@@ -38,8 +38,19 @@ void IndexDocument::ReadDocument(Document doc) {
 
 			if ((!it->isTag()) && (!it->isComment())) {
 				this->text += " " + it->text();
-			} else
-				ReadTags(it, end);
+			} else {
+				//ReadTags(it, end);
+				string tag = it->tagName();
+				boost::to_lower(tag);
+
+				if (tag == "title") {
+					it++;
+					if (it == end)
+						return;
+
+					setTitle(it->text());
+				}
+			}
 		}
 	}
 
@@ -56,17 +67,6 @@ bool IndexDocument::IsScript(string item) {
 	return false;
 }
 
-void IndexDocument::ReadTags(tree<HTML::Node>::iterator & item,
-		tree<HTML::Node>::iterator & end) {
-
-	string tag = item->tagName();
-	boost::to_lower(tag);
-
-	if (tag == "title") {
-		item++;
-		if (item == end)
-			return;
-
-		setTitle(item->text());
-	}
+void IndexDocument::ReadTags(tree<HTML::Node>::iterator& it,
+		tree<HTML::Node>::iterator& end) {
 }
