@@ -60,7 +60,7 @@ inline void IndexDocument::setTitle(string _title) {
 }
 
 inline string IndexDocument::getText() {
-	return this->text;
+	return text;
 }
 
 #endif /* INDEXDOCUMENT_H_ */

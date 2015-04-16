@@ -27,11 +27,20 @@ public:
 
 	virtual ~WriterHelper() {
 		Close();
-	};
+	}
 
 	void Write(IndexTerm& obj) {
 		CheckFile();
-		fwrite((char *) &obj, sizeof(obj), 1, file);
+		fwrite((char *) &obj.termId, sizeof(obj.termId), 1, file);
+		fwrite((char *) &obj.documentId, sizeof(obj.documentId), 1, file);
+		fwrite((char *) &obj.frequency, sizeof(obj.frequency), 1, file);
+		fwrite((char *) &obj.positions[0],
+				sizeof(obj.positions) * obj.positions.size(), 1, file);
+	}
+
+	void Close() {
+		CheckFile();
+		fclose(file);
 	}
 
 private:
@@ -47,11 +56,6 @@ private:
 		//		size = fileSize / sizeof(T);
 		//		rewind();
 		//	}
-	}
-
-	void Close() {
-		CheckFile();
-		fclose(file);
 	}
 
 	void CheckFile() {

@@ -25,7 +25,7 @@ class Indexer {
 public:
 	Indexer(string directory);
 	virtual ~Indexer();
-	void AddDocument(IndexDocument *document);
+	void AddDocument(IndexDocument &document);
 	Dictionary getDictionary();
 	unsigned long getDocumentsIndexedSize();
 };

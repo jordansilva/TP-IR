@@ -26,8 +26,8 @@ const std::string currentDateTime2() {
 	return buf;
 }
 
-void Indexer::AddDocument(IndexDocument *document) {
-	parser.Process(document->getText());
+void Indexer::AddDocument(IndexDocument &document) {
+	parser.Process(document.getText());
 	unordered_map<string, vector<int> > terms = parser.GetTerms();
 	unordered_map<string, vector<int> >::iterator it = terms.begin();
 	unordered_map<string, vector<int> >::iterator end = terms.end();
@@ -45,6 +45,5 @@ void Indexer::AddDocument(IndexDocument *document) {
 	if (countDocuments % 10000 == 0)
 		cout << currentDateTime2() << " Documentos indexados: " << countDocuments << endl;
 
-	delete document;
 	terms.clear();
 }

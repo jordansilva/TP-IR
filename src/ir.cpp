@@ -41,6 +41,7 @@ bool isValid(string url) {
 }
 
 int main(int argc, const char * argv[]) {
+
 	clock_t start = clock();
 	cout << currentDateTime() << endl;
 
@@ -51,7 +52,7 @@ int main(int argc, const char * argv[]) {
 
 	while (reader.getNextDocument(doc)) {
 		if (isValid(doc.getURL())) {
-			IndexDocument *document = new IndexDocument(doc);
+			IndexDocument document(doc);
 			indexer.AddDocument(document);
 		}
 	}
@@ -61,7 +62,8 @@ int main(int argc, const char * argv[]) {
 	cout << "All files was indexed. Time elapsed: " << elapsed_secs << endl;
 	cout << currentDateTime() << endl;
 	cout << "All files was indexed" << endl;
-	cin.get();
+	//cin.get();
+
 	return 0;
 }
 

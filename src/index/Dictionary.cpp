@@ -13,7 +13,7 @@ Dictionary::Dictionary() {
 }
 
 Dictionary::~Dictionary() {
-	// TODO Auto-generated destructor stub
+	delete terms;
 }
 
 int Dictionary::AddTerm(string term) {
