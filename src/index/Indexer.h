@@ -9,6 +9,7 @@
 #define INDEXER_H_
 
 #include <string>
+#include <sstream>
 #include "../parser/TextParser.h"
 #include "../util/WriterHelper.h"
 #include "IndexDocument.h"
@@ -20,12 +21,14 @@ class Indexer {
 	WriterHelper* writer;
 	TextParser parser;
 	Dictionary dictionary;
+	string directory;
 	int countDocuments;
 
 public:
 	Indexer(string directory);
 	virtual ~Indexer();
 	void AddDocument(IndexDocument &document);
+	void SaveVocabulary();
 	Dictionary getDictionary();
 	unsigned long getDocumentsIndexedSize();
 };

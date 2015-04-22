@@ -24,12 +24,15 @@ void TextParser::Process(string text) {
 	boost::to_lower(text);
 	removeAccents(text);
 
+	//	boost::replace_all(text, "\t", "");
+	//	boost::replace_all(text, "\r\n", "");
+	//	boost::replace_all(text, "\n", "");
+	//	boost::replace_all(text, "\b", "");
 
-	char_separator<char> sep(", ");
+	char_separator<char> sep(",\t\r\n\b ");
 	tokenizer<char_separator<char> > tokens(text, sep);
 
-	for (tokenizer<char_separator<char> >::iterator it = tokens.begin(); it
-			!= tokens.end(); ++it) {
+	for (tokenizer<char_separator<char> >::iterator it = tokens.begin(); it != tokens.end(); ++it) {
 		token = it.current_token();
 		boost::trim(token);
 

@@ -7,8 +7,9 @@
 
 #include "Indexer.h"
 
-Indexer::Indexer(string directory) {
-	writer = new WriterHelper(directory + "/file.index");
+Indexer::Indexer(string directoryName) {
+	directory = directoryName;
+	writer = new WriterHelper(directory + "/file.index", true);
 	countDocuments = 0;
 }
 
@@ -36,8 +37,7 @@ void Indexer::AddDocument(IndexDocument &document) {
 	int termid = 0;
 	for (; it != end; ++it) {
 		termid = dictionary.AddTerm(it->first);
-		//cout << "document_id: " << countDocuments << " | term: " << it->first << " | term_id: " << termid << " | " << it->second.size() << endl;
-		//cout << termid << endl;
+		//cout << "term_id: " << termid << " | term: " << it->first << " | document_id: " << countDocuments << " | " << it->second.size() << endl;
 		IndexTerm term(termid, countDocuments, it->second.size(), it->second);
 		writer->Write(term);
 	}
@@ -46,4 +46,18 @@ void Indexer::AddDocument(IndexDocument &document) {
 		cout << currentDateTime2() << " Documentos indexados: " << countDocuments << endl;
 
 	terms.clear();
+}
+
+void Indexer::SaveVocabulary() {
+	ofstream writer;
+	writer.open(directory + "/file.terms");
+
+	unordered_map<string, unsigned int>* terms = dictionary.getTerms();
+	unordered_map<string, unsigned int>::iterator it = terms->begin();
+	unordered_map<string, unsigned int>::iterator end = terms->end();
+
+	for (; it != end; ++it)
+		writer << it->first << " " << it->second << endl;
+
+	writer.close();
 }

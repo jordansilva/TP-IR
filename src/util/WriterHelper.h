@@ -18,15 +18,37 @@ using namespace std;
 class WriterHelper {
 	FILE* file;
 	string filename;
+	int fileSize;
 
 public:
-	WriterHelper(string name) {
+	WriterHelper(string name, bool writeFile) {
 		this->filename = name;
-		Open();
+		Open(writeFile);
 	}
 
 	virtual ~WriterHelper() {
 		Close();
+	}
+
+	IndexTerm ReadIndex() {
+		CheckFile();
+
+		int termId, documentId, termFrequency;
+
+		fread((char*) &termId, sizeof(int), 1, file);
+		fread((char*) &documentId, sizeof(int), 1, file);
+		fread((char*) &termFrequency, sizeof(int), 1, file);
+
+		vector<int> positions(termFrequency);
+		fread((char*) &positions[0], sizeof(int)*termFrequency, 1, file);
+
+		return IndexTerm(termId, documentId, termFrequency, positions);
+	}
+
+	template <class T>
+	void Read(T* obj) {
+		CheckFile();
+		fread((char*) obj, sizeof(T), 1, file);
 	}
 
 	void Write(IndexTerm& obj) {
@@ -34,8 +56,26 @@ public:
 		fwrite((char *) &obj.termId, sizeof(obj.termId), 1, file);
 		fwrite((char *) &obj.documentId, sizeof(obj.documentId), 1, file);
 		fwrite((char *) &obj.frequency, sizeof(obj.frequency), 1, file);
-		fwrite((char *) &obj.positions[0],
-				sizeof(obj.positions) * obj.positions.size(), 1, file);
+		fwrite((char *) &obj.positions[0], obj.positions.size(), sizeof(int), file);
+	}
+
+	void WriteText(string text) {
+		CheckFile();
+		fwrite((char *) &text, sizeof(text), 1, file);
+	}
+
+	bool HasNext() {
+		CheckFile();
+		return (CurrentPosition() < fileSize);
+	}
+
+	int CurrentPosition() {
+		return ftell(file);
+	}
+
+	void SetPosition(int position) {
+		CheckFile();
+		fseek(file, position, SEEK_SET);
 	}
 
 	void Close() {
@@ -45,17 +85,16 @@ public:
 
 private:
 
-	void Open() {
-		//if (trunc) {
-		file = fopen(filename.c_str(), "w+b");
-		//size = 0;
-		//} else {
-		//		file = fopen(name.c_str(), "a+b");
-		//		fseek(file, 0, SEEK_END);
-		//		int fileSize = ftell(file);
-		//		size = fileSize / sizeof(T);
-		//		rewind();
-		//	}
+	void Open(bool writeFile) {
+		if (writeFile)
+			file = fopen(filename.c_str(), "w+b");
+		else {
+			file = fopen(filename.c_str(), "a+b");
+			fseek(file, 0, SEEK_END);
+			fileSize = ftell(file);
+			rewind(file);
+			fseek(file, 0, SEEK_SET);
+		}
 	}
 
 	void CheckFile() {

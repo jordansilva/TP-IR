@@ -45,24 +45,46 @@ int main(int argc, const char * argv[]) {
 	clock_t start = clock();
 	cout << currentDateTime() << endl;
 
+	//Indexer
 	CollectionReader reader(DIRECTORY, MAPFILE);
 	Document doc;
 	doc.clear();
-	Indexer indexer(".");
+	Indexer* indexer = new Indexer(".");
 
 	while (reader.getNextDocument(doc)) {
 		if (isValid(doc.getURL())) {
 			IndexDocument document(doc);
-			indexer.AddDocument(document);
+			indexer->AddDocument(document);
 		}
 	}
 
+	//Save vocabulary
+	indexer->SaveVocabulary();
+
+	//Count time
 	clock_t end = clock();
 	double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
 	cout << "All files was indexed. Time elapsed: " << elapsed_secs << endl;
 	cout << currentDateTime() << endl;
 	cout << "All files was indexed" << endl;
+
 	//cin.get();
+	delete indexer;
+
+	//Read index
+	//	WriterHelper wHelper("./file.index", false);
+	//	while (wHelper.HasNext()) {
+	//		IndexTerm i = wHelper.ReadIndex();
+	//		i.print();
+	//	}
+
+	//Read vocabulary
+	//	while (wHelper.HasNext()) {
+	//		wHelper.Read(&term);
+	//		break;
+	//		wHelper.Read(&id);
+	//		cout << "term: " << term << " | id: " << id << endl;
+	//	}
 
 	return 0;
 }

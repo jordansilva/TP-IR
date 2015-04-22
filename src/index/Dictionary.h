@@ -17,10 +17,16 @@ using namespace boost;
 class Dictionary {
 public:
 	Dictionary();
+	Dictionary(string file);
 	virtual ~Dictionary();
 	int AddTerm(string term);
+	unordered_map<string, unsigned int>* getTerms();
 private:
-	unordered_map<string, int>* terms;
+	unordered_map<string, unsigned int>* terms;
 };
+
+inline unordered_map<string, unsigned int>* Dictionary::getTerms() {
+	return terms;
+}
 
 #endif /* DICTIONARY_H_ */
