@@ -19,7 +19,9 @@ IndexDocument::~IndexDocument() {
 void IndexDocument::ReadDocument(Document doc) {
 	HTML::ParserDom parser;
 
-	tree<HTML::Node> dom = parser.parseTree(doc.getText());
+	string docText = doc.getText();
+	RemoveHeader(docText);
+	tree<HTML::Node> dom = parser.parseTree(docText);
 	tree<HTML::Node>::iterator it = dom.begin();
 	tree<HTML::Node>::iterator end = dom.end();
 
@@ -57,6 +59,15 @@ void IndexDocument::ReadDocument(Document doc) {
 	parser, dom, it, end = NULL;
 }
 
+bool IndexDocument::RemoveHeader(string& str) {
+    size_t pos = str.find("<!DOC");
+    if (!pos || pos == string::npos) {
+        return false;
+    }
+    str.erase(0, pos - 1);
+    return true;
+}
+
 bool IndexDocument::IsScript(string item) {
 	boost::to_lower(item);
 	if (item.find("script") != string::npos || item.find("noscript")
@@ -65,8 +76,4 @@ bool IndexDocument::IsScript(string item) {
 	}
 
 	return false;
-}
-
-void IndexDocument::ReadTags(tree<HTML::Node>::iterator& it,
-		tree<HTML::Node>::iterator& end) {
 }

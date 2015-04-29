@@ -24,6 +24,9 @@ class Indexer {
 	string directory;
 	int countDocuments;
 
+private:
+	void CheckSize();
+
 public:
 	Indexer(string directory);
 	virtual ~Indexer();

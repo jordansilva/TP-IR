@@ -11,6 +11,7 @@
 #include <fstream>
 #include <cstdio>
 #include <string>
+#include <stdio.h>
 #include "../index/IndexTerm.h"
 
 using namespace std;
@@ -18,7 +19,7 @@ using namespace std;
 class WriterHelper {
 	FILE* file;
 	string filename;
-	int fileSize;
+	unsigned int fileSize;
 
 public:
 	WriterHelper(string name, bool writeFile) {
@@ -69,7 +70,7 @@ public:
 		return (CurrentPosition() < fileSize);
 	}
 
-	int CurrentPosition() {
+	unsigned int CurrentPosition() {
 		return ftell(file);
 	}
 
@@ -78,9 +79,28 @@ public:
 		fseek(file, position, SEEK_SET);
 	}
 
+	unsigned int getSize() {
+		unsigned int currPosition = ftell(file);
+		fseek(file, 0L, SEEK_END);
+		unsigned int size = ftell(file);
+		fseek(file, 0L, currPosition);
+		return size;
+	}
+
 	void Close() {
 		CheckFile();
 		fclose(file);
+		file = NULL;
+	}
+
+	bool Remove()
+	{
+		Close();
+		return (remove(filename.c_str()) == 0);
+	}
+
+	bool isOpen() {
+		return (file != NULL);
 	}
 
 private:

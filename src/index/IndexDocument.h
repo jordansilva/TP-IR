@@ -36,8 +36,7 @@ public:
 private:
 	bool IsScript(string item);
 	void ReadDocument(Document document);
-	void ReadTags(tree<HTML::Node>::iterator & item,
-			tree<HTML::Node>::iterator & end);
+	bool RemoveHeader(string& str);
 	string url;
 	string title;
 	string text;

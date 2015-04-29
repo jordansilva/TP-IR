@@ -13,7 +13,9 @@ src/ir.d: ../src/ir.cpp ../src/libs/reader/CollectionReader.h \
  ../src/index/../libs/htmlcxx/html/Node.h ../src/index/Indexer.h \
  ../src/index/../parser/TextParser.h ../src/index/../util/WriterHelper.h \
  ../src/index/../util/../index/IndexTerm.h ../src/index/IndexDocument.h \
- ../src/index/Dictionary.h ../src/index/IndexTerm.h
+ ../src/index/Dictionary.h ../src/index/IndexTerm.h \
+ ../src/util/SortFile.h ../src/util/../index/IndexTerm.h \
+ ../src/util/WriterHelper.h
 
 ../src/libs/reader/CollectionReader.h:
 
@@ -56,3 +58,9 @@ src/ir.d: ../src/ir.cpp ../src/libs/reader/CollectionReader.h \
 ../src/index/Dictionary.h:
 
 ../src/index/IndexTerm.h:
+
+../src/util/SortFile.h:
+
+../src/util/../index/IndexTerm.h:
+
+../src/util/WriterHelper.h:
