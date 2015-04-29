@@ -10,38 +10,36 @@
 
 #include <string>
 #include <sstream>
+#include "../libs/reader/CollectionReader.h"
 #include "../parser/TextParser.h"
 #include "../util/WriterHelper.h"
 #include "IndexDocument.h"
-#include "Dictionary.h"
 #include "IndexTerm.h"
+#include "Dictionary.h"
+
+#define INDEX_NAME "file.index"
+#define VOCABULARY_NAME "file.terms"
 
 class Indexer {
 
-	WriterHelper* writer;
-	TextParser parser;
-	Dictionary dictionary;
-	string directory;
-	int countDocuments;
-
+	string mOutputDirectory;
+	WriterHelper* mWriter;
+	TextParser mParser;
+	Dictionary mDictionary;
+	
 private:
-	void CheckSize();
+	void add(IndexDocument &document);
+	void dumpVocabulary();	
+	bool isValidDocument(string url)
 
 public:
-	Indexer(string directory);
+	Indexer(string directory, string mapfile, string output);
 	virtual ~Indexer();
-	void AddDocument(IndexDocument &document);
-	void SaveVocabulary();
 	Dictionary getDictionary();
-	unsigned long getDocumentsIndexedSize();
 };
 
 inline Dictionary Indexer::getDictionary() {
-	return dictionary;
-}
-
-inline unsigned long Indexer::getDocumentsIndexedSize() {
-	return countDocuments;
+	return mDictionary;
 }
 
 #endif /* INDEXER_H_ */

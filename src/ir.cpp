@@ -9,9 +9,6 @@
 #include <iostream>
 #include <sstream>
 #include <ctime>
-#include "libs/reader/CollectionReader.h"
-#include "index/IndexDocument.h"
-#include "index/Indexer.h"
 #include "util/SortFile.h"
 
 #define DIRECTORY "/home/jordan/documents/ir/irCollection"
@@ -32,43 +29,11 @@ const std::string currentDateTime() {
 	return buf;
 }
 
-bool isValid(string url) {
-	if (url.find(".pdf") != string::npos || url.find(".doc") != string::npos || url.find(".xls")
-			!= string::npos || url.find(".swf") != string::npos)
-		return false;
-	else
-		return true;
-}
+void search(string query) {
 
-void index() {
-	//Indexer
-	CollectionReader reader(DIRECTORY, MAPFILE);
-	Document doc;
-	Indexer* indexer = new Indexer("./output/");
-
-	while (reader.getNextDocument(doc)) {
-		if (isValid(doc.getURL())) {
-			IndexDocument document(doc);
-			indexer->AddDocument(document);
-		}
-	}
-
-	//Save vocabulary
-	indexer->SaveVocabulary();
-
-	delete indexer;
-}
-
-void order() {
-	///home/jordan/documents/ir/ir/file.index
-	SortFile sortFile("file.index");
-	sortFile.sort();
 }
 
 void mergeSeek() {
-}
-
-void search(string query) {
 
 }
 
@@ -77,10 +42,16 @@ int main(int argc, const char * argv[]) {
 	clock_t start = clock();
 	cout << currentDateTime() << endl;
 
-	index();
+	//index
+	//Indexer indexer(DIRECTORY, MAPFILE, OUTPUT_DIRECTORY);
 
 	//external sort
-	order();
+	//SortFile sort("file.index");
+	
+	//merge vocabulary
+	SortFile::mergeVocabulary("file.terms", "seek.terms", OUTPUT_DIRECTORY);
+
+	
 	//mergeSeek();
 
 //	string query;

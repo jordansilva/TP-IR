@@ -7,11 +7,14 @@
 
 #include "SortFile.h"
 
-SortFile::SortFile(string index) {
+SortFile::SortFile(string directory, string filename) {	
 	mLastTermIdSeek = 0;
-	mIndex = index;
 	mWriter = NULL;
+	mOutputDirectory = directory;
 	mQueue = new priority_queue<IndexTerm, vector<IndexTerm> , greater<IndexTerm> > ();
+
+	execute(directory + "/" + filename);
+	
 }
 
 SortFile::~SortFile() {
@@ -20,18 +23,18 @@ SortFile::~SortFile() {
 	delete mQueue;
 }
 
-void SortFile::sort() {
-	split();
+void SortFile::execute(string index) {
+	split(index);
 	merge();
 }
 
-void SortFile::split() {
+void SortFile::split(string filename) {
 	//Start Writer
 	vector<IndexTerm> vectorTerms;
 	vectorTerms.reserve(FILE_SIZE/16);
 	int vectorSize = 0;
 
-	WriterHelper indexFile(mIndex, false);
+	WriterHelper indexFile(filename, false);
 	while (indexFile.HasNext()) {
 		//add term to vector
 		IndexTerm term = indexFile.ReadIndex();
@@ -71,7 +74,7 @@ void SortFile::merge() {
 	//create runs
 	vector<WriterHelper*> runs;
 	while (runs.size() <= RUN_SIZE && runs.size() < mQueueFiles.size()) {
-		runs.push_back(new WriterHelper(OUTPUT_DIRECTORY + mQueueFiles[runs.size()], false));
+		runs.push_back(new WriterHelper(mOutputDirectory + mQueueFiles[runs.size()], false));
 	}
 
 	//if exists runs to merge
@@ -126,7 +129,7 @@ void SortFile::merge() {
 
 		if (isLastMerge) {
 			closeVocabulary();
-			rename(mWriter->getFilename().c_str(), (string(OUTPUT_DIRECTORY) + "inverted.index").c_str());
+			rename(mWriter->getFilename().c_str(), (mOutputDirectory + "inverted.index").c_str());
 		}
 	}
 
@@ -147,7 +150,7 @@ void SortFile::createNewIndexFile(string filename) {
 	if (mWriter && mWriter->isOpen())
 		mWriter->Close();
 
-	mWriter = new WriterHelper(OUTPUT_DIRECTORY + filename, true);
+	mWriter = new WriterHelper(mOutputDirectory + filename, true);
 	mQueueFiles.push_back(filename);
 	//std::cout << "File created: " << filename << endl;
 }
@@ -187,7 +190,7 @@ int SortFile::write(bool isLastMerge) {
 }
 
 void SortFile::openVocabulary() {
-	mVocabularyWriter.open(string(OUTPUT_DIRECTORY) + "mVocabularySeek.terms");
+	mVocabularyWriter.open(mOutputDirectory + "seek.terms");
 }
 
 void SortFile::closeVocabulary() {
@@ -198,3 +201,39 @@ void SortFile::writeVocabulary(unsigned int id, unsigned int seek) {
 	mVocabularyWriter << id << " " << seek;
 }
 
+static void SortFile::mergeVocabulary(string file, string fileSeek, string outputDirectory) {
+	WriterHelper writer(outputDirectory + "/" + file, false);
+	WriterHelper writerSeek(outputDirectory + "/" + fileSeek, false);
+
+	string term;
+	unsigned int id = 0;
+	unsigned int seek = 0;
+	unordered_map<int, Term*> *terms = new unordered_map<int, Term>();
+	while (writer.HasNext()) {
+		wHelper.Read(&term);
+		wHelper.Read(&id);
+		terms->insert(make_pair(id, Term(id, term)));
+	}
+
+	id = 0;
+	seek = 0;
+
+	ofstream vocabularyWriter;
+	vocabularyWriter.open(outputDirectory + "/vocabulary.terms");
+
+	while (writerSeek.HasNext()) {
+		wHelper.Read(&id);
+		wHelper.Read(&seek);
+
+		unordered_map<int, Term*>::iterator it = terms->find(id);
+		if (it != terms->end())
+			vocabularyWriter << it->second->term << " " << it->second->id << " " << it->second->indexSeek;
+		else
+			throw;
+	}
+
+	//remove(file);
+	//remove(fileSeek);
+
+	vocabularyWriter.close();
+}
