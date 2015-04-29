@@ -10,8 +10,6 @@
 Indexer::Indexer(string directory, string mapfile, string output) {
 	mOutputDirectory = output;
 	mWriter = new WriterHelper(mOutputDirectory + INDEX_NAME, true);
-	countDocuments = 0;
-
 	execute(directory, mapfile);
 }
 
@@ -51,7 +49,7 @@ void Indexer::add(IndexDocument &document, int documentId) {
 	unordered_map<string, vector<int> >::iterator it = terms.begin();
 	unordered_map<string, vector<int> >::iterator end = terms.end();
 	
-	unsigned int termid = 0;
+	unsigned int termId = 0;
 	for (; it != end; ++it) {
 		termId = mDictionary.AddTerm(it->first);
 		IndexTerm indexTerm(termId, documentId, it->second.size(), it->second);

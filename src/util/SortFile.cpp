@@ -7,18 +7,16 @@
 
 #include "SortFile.h"
 
-SortFile::SortFile(string directory, string filename) {	
+SortFile::SortFile(string directory, string filename) {
 	mLastTermIdSeek = 0;
 	mWriter = NULL;
 	mOutputDirectory = directory;
 	mQueue = new priority_queue<IndexTerm, vector<IndexTerm> , greater<IndexTerm> > ();
 
 	execute(directory + "/" + filename);
-	
 }
 
 SortFile::~SortFile() {
-	mIndex.clear();
 	delete mWriter;
 	delete mQueue;
 }
@@ -26,12 +24,13 @@ SortFile::~SortFile() {
 void SortFile::execute(string index) {
 	split(index);
 	merge();
+	remove(index.c_str());
 }
 
 void SortFile::split(string filename) {
 	//Start Writer
 	vector<IndexTerm> vectorTerms;
-	vectorTerms.reserve(FILE_SIZE/16);
+	vectorTerms.reserve(FILE_SIZE / 16);
 	int vectorSize = 0;
 
 	WriterHelper indexFile(filename, false);
@@ -130,6 +129,7 @@ void SortFile::merge() {
 		if (isLastMerge) {
 			closeVocabulary();
 			rename(mWriter->getFilename().c_str(), (mOutputDirectory + "inverted.index").c_str());
+			remove(mWriter->getFilename().c_str());
 		}
 	}
 
@@ -198,42 +198,46 @@ void SortFile::closeVocabulary() {
 }
 
 void SortFile::writeVocabulary(unsigned int id, unsigned int seek) {
-	mVocabularyWriter << id << " " << seek;
+	mVocabularyWriter << id << " " << seek << endl;
 }
 
-static void SortFile::mergeVocabulary(string file, string fileSeek, string outputDirectory) {
-	WriterHelper writer(outputDirectory + "/" + file, false);
-	WriterHelper writerSeek(outputDirectory + "/" + fileSeek, false);
+void SortFile::mergeVocabulary(string file, string fileSeek, string outputDirectory) {
+	ifstream writer(outputDirectory + "/" + file);
+	ifstream writerSeek(outputDirectory + "/" + fileSeek);
 
+	string line;
 	string term;
 	unsigned int id = 0;
 	unsigned int seek = 0;
-	unordered_map<int, Term*> *terms = new unordered_map<int, Term>();
-	while (writer.HasNext()) {
-		wHelper.Read(&term);
-		wHelper.Read(&id);
-		terms->insert(make_pair(id, Term(id, term)));
+
+	unordered_map<int, Term*> *terms = new unordered_map<int, Term*> ();
+	while (getline(writer, line)) {
+		istringstream ss(line);
+		ss >> term >> id;
+		terms->insert(make_pair(id, new Term(id, term)));
 	}
 
 	id = 0;
 	seek = 0;
+	line = "";
 
 	ofstream vocabularyWriter;
 	vocabularyWriter.open(outputDirectory + "/vocabulary.terms");
 
-	while (writerSeek.HasNext()) {
-		wHelper.Read(&id);
-		wHelper.Read(&seek);
+	while (getline(writerSeek, line)) {
+		istringstream ss(line);
+		ss >> id >> seek;
 
 		unordered_map<int, Term*>::iterator it = terms->find(id);
 		if (it != terms->end())
-			vocabularyWriter << it->second->term << " " << it->second->id << " " << it->second->indexSeek;
-		else
-			throw;
+			vocabularyWriter << it->second->term << " " << it->second->id << " " << seek << endl;
+		else {
+			cout << id << endl;
+		}
 	}
 
-	//remove(file);
-	//remove(fileSeek);
+	remove(file.c_str());
+	remove(fileSeek.c_str());
 
 	vocabularyWriter.close();
 }

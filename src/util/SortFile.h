@@ -9,11 +9,18 @@
 #define SORTFILE_H_
 
 #include "../index/IndexTerm.h"
+#include "../index/Term.h"
 #include "WriterHelper.h"
 #include <queue>
 #include <algorithm>
+#include <iostream>
+#include <fstream>
+#include <boost/unordered_map.hpp>
+#include <boost/tokenizer.hpp>
+#include <boost/algorithm/string.hpp>
 
 using namespace std;
+using namespace boost;
 
 #define HEAP_SIZE 10000000
 #define FILE_SIZE 10000000
@@ -23,33 +30,33 @@ class SortFile {
 
 	string mOutputDirectory;
 
-    WriterHelper* mWriter;
-    ofstream mVocabularyWriter;
+	WriterHelper* mWriter;
+	ofstream mVocabularyWriter;
 
-    priority_queue<IndexTerm, vector<IndexTerm>, greater<IndexTerm> >* mQueue;
-    vector<string> mQueueFiles;
-    unsigned int mLastTermIdSeek;
-    unsigned int mQueueSize;
+	priority_queue<IndexTerm, vector<IndexTerm> , greater<IndexTerm> >* mQueue;
+	vector<string> mQueueFiles;
+	unsigned int mLastTermIdSeek;
+	unsigned int mQueueSize;
 
 public:
-    SortFile(string index);
-    virtual ~SortFile();    
+	SortFile(string directory, string index);
+	virtual ~SortFile();
+	static void mergeVocabulary(string file, string fileSeek, string outputDirectory);
 
 private:
-    void createNewIndexFile(string filename);
-    void checkFileSize();
+	void createNewIndexFile(string filename);
+	void checkFileSize();
 
-    void execute(string index);
-    void split(string filename);
-    void merge();
+	void execute(string index);
+	void split(string filename);
+	void merge();
 
-    int write(bool isLastMerge);
-    void dumpVector(vector<IndexTerm>* vectorTerms);
+	int write(bool isLastMerge);
+	void dumpVector(vector<IndexTerm>* vectorTerms);
 
-    void openVocabulary();
-    void closeVocabulary();
-    void writeVocabulary(unsigned int id, unsigned int seek);
-    static void mergeVocabulary(string file, string fileSeek, string outputDirectory);
+	void openVocabulary();
+	void closeVocabulary();
+	void writeVocabulary(unsigned int id, unsigned int seek);
 };
 
 #endif /* SORTFILE_H_ */

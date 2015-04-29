@@ -7,17 +7,15 @@
 //
 
 #include <iostream>
-#include <sstream>
 #include <ctime>
 #include "util/SortFile.h"
+#include "index/Indexer.h"
 
 #define DIRECTORY "/home/jordan/documents/ir/irCollection"
 #define MAPFILE "index.txt"
 #define OUTPUT_DIRECTORY "./output/"
 
 using namespace std;
-using namespace RICPNS;
-using namespace htmlcxx;
 
 const std::string currentDateTime() {
 	time_t now = time(0);
@@ -46,21 +44,20 @@ int main(int argc, const char * argv[]) {
 	//Indexer indexer(DIRECTORY, MAPFILE, OUTPUT_DIRECTORY);
 
 	//external sort
-	//SortFile sort("file.index");
-	
+	//SortFile sort(OUTPUT_DIRECTORY, "file.index");
+
 	//merge vocabulary
 	SortFile::mergeVocabulary("file.terms", "seek.terms", OUTPUT_DIRECTORY);
 
-	
 	//mergeSeek();
 
-//	string query;
-//	cin >> query;
+	//	string query;
+	//	cin >> query;
 
-//	if (query != null && query.length() > 0)
-//	{
-//		search(query);
-//	}
+	//	if (query != null && query.length() > 0)
+	//	{
+	//		search(query);
+	//	}
 	//search();
 	//cin;
 	//Count time

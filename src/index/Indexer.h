@@ -20,6 +20,9 @@
 #define INDEX_NAME "file.index"
 #define VOCABULARY_NAME "file.terms"
 
+using namespace RICPNS;
+using namespace htmlcxx;
+
 class Indexer {
 
 	string mOutputDirectory;
@@ -28,9 +31,10 @@ class Indexer {
 	Dictionary mDictionary;
 	
 private:
-	void add(IndexDocument &document);
+	void execute(string directory, string mapfile);
+	void add(IndexDocument &document, int documentId);
 	void dumpVocabulary();	
-	bool isValidDocument(string url)
+	bool isValidDocument(string url);
 
 public:
 	Indexer(string directory, string mapfile, string output);

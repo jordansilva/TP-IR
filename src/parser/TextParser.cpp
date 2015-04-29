@@ -29,7 +29,7 @@ void TextParser::Process(string text) {
 	//	boost::replace_all(text, "\n", "");
 	//	boost::replace_all(text, "\b", "");
 
-	char_separator<char> sep(",\t\r\n\b ");
+	char_separator<char> sep(",\t\r\n\b\v\f ");
 	tokenizer<char_separator<char> > tokens(text, sep);
 
 	for (tokenizer<char_separator<char> >::iterator it = tokens.begin(); it != tokens.end(); ++it) {
