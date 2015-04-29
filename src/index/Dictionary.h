@@ -10,6 +10,7 @@
 
 #include <string>
 #include <boost/unordered_map.hpp>
+#include "Term.h"
 
 using namespace std;
 using namespace boost;
@@ -19,13 +20,15 @@ public:
 	Dictionary();
 	Dictionary(string file);
 	virtual ~Dictionary();
-	int AddTerm(string term);
-	unordered_map<string, unsigned int>* getTerms();
+	unsigned int AddTerm(string term);
+	unsigned int AddTerm(string term, unsigned int seek);
+	unordered_map<string, Term>* getTerms();
+
 private:
-	unordered_map<string, unsigned int>* terms;
+	unordered_map<string, Term>* terms;
 };
 
-inline unordered_map<string, unsigned int>* Dictionary::getTerms() {
+inline unordered_map<string, Term>* Dictionary::getTerms() {
 	return terms;
 }
 

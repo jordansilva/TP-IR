@@ -39,50 +39,10 @@ bool isValid(string url) {
 		return true;
 }
 
-void order() {
-	SortFile sortFile;
-	sortFile.sort("/home/jordan/documents/ir/ir/file2.index");
-}
-
-int main(int argc, const char * argv[]) {
-
-	clock_t start = clock();
-	cout << currentDateTime() << endl;
-
-	//index();
-	//order();
-	//cin;
-	//Count time
-	clock_t end = clock();
-	double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
-	cout << "All files was indexed. Time elapsed: " << elapsed_secs << endl;
-	cout << currentDateTime() << endl;
-	cout << "All files was indexed" << endl;
-
-
-	//Read index
-	WriterHelper wHelper("./output/_merged414.index", false);
-	while (wHelper.HasNext()) {
-		IndexTerm i = wHelper.ReadIndex();
-		cout << i.print() << endl;
-	}
-
-	//Read vocabulary
-	//	while (wHelper.HasNext()) {
-	//		wHelper.Read(&term);
-	//		break;
-	//		wHelper.Read(&id);
-	//		cout << "term: " << term << " | id: " << id << endl;
-	//	}
-
-	return 0;
-}
-
 void index() {
 	//Indexer
 	CollectionReader reader(DIRECTORY, MAPFILE);
 	Document doc;
-	doc.clear();
 	Indexer* indexer = new Indexer("./output/");
 
 	while (reader.getNextDocument(doc)) {
@@ -96,5 +56,61 @@ void index() {
 	indexer->SaveVocabulary();
 
 	delete indexer;
+}
+
+void order() {
+	///home/jordan/documents/ir/ir/file.index
+	SortFile sortFile("file.index");
+	sortFile.sort();
+}
+
+void mergeSeek() {
+}
+
+void search(string query) {
+
+}
+
+int main(int argc, const char * argv[]) {
+
+	clock_t start = clock();
+	cout << currentDateTime() << endl;
+
+	//index();
+	order();
+	//mergeSeek();
+
+//	string query;
+//	cin >> query;
+
+//	if (query != null && query.length() > 0)
+//	{
+//		search(query);
+//	}
+	//search();
+	//cin;
+	//Count time
+	clock_t end = clock();
+	double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
+	cout << "All files was indexed. Time elapsed: " << elapsed_secs << endl;
+	cout << currentDateTime() << endl;
+	cout << "All files was indexed" << endl;
+
+	//Read index
+	//	WriterHelper wHelper("./output/_merged414.index", false);
+	//	while (wHelper.HasNext()) {
+	//		IndexTerm i = wHelper.ReadIndex();
+	//		cout << i.print() << endl;
+	//	}
+
+	//Read vocabulary
+	//	while (wHelper.HasNext()) {
+	//		wHelper.Read(&term);
+	//		break;
+	//		wHelper.Read(&id);
+	//		cout << "term: " << term << " | id: " << id << endl;
+	//	}
+
+	return 0;
 }
 

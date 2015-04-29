@@ -34,7 +34,7 @@ void Indexer::AddDocument(IndexDocument &document) {
 	unordered_map<string, vector<int> >::iterator end = terms.end();
 
 	countDocuments++;
-	int termid = 0;
+	unsigned int termid = 0;
 	for (; it != end; ++it) {
 		termid = dictionary.AddTerm(it->first);
 		//cout << "term_id: " << termid << " | term: " << it->first << " | document_id: " << countDocuments << " | " << it->second.size() << endl;
@@ -52,12 +52,12 @@ void Indexer::SaveVocabulary() {
 	ofstream writer;
 	writer.open(directory + "/file.terms");
 
-	unordered_map<string, unsigned int>* terms = dictionary.getTerms();
-	unordered_map<string, unsigned int>::iterator it = terms->begin();
-	unordered_map<string, unsigned int>::iterator end = terms->end();
+	unordered_map<string, Term>* terms = dictionary.getTerms();
+	unordered_map<string, Term>::iterator it = terms->begin();
+	unordered_map<string, Term>::iterator end = terms->end();
 
 	for (; it != end; ++it)
-		writer << it->first << " " << it->second << endl;
+		writer << it->first << " " << it->second.id << endl;
 
 	writer.close();
 }

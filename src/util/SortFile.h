@@ -18,26 +18,38 @@ using namespace std;
 #define HEAP_SIZE 10000000
 #define FILE_SIZE 10000000
 #define RUN_SIZE 50
+#define OUTPUT_DIRECTORY "./output/"
 
 class SortFile {
 
-    WriterHelper* writer;
-    priority_queue<IndexTerm, vector<IndexTerm>, greater<IndexTerm> >* queue;
-    unsigned int queueSize;
-    vector<string> fileNames;
-    unsigned int countDocs;
+	string mIndex;
 
+    WriterHelper* mWriter;
+    ofstream mVocabularyWriter;
+
+    priority_queue<IndexTerm, vector<IndexTerm>, greater<IndexTerm> >* mQueue;
+    vector<string> mQueueFiles;
+    unsigned int mLastTermIdSeek;
+    unsigned int mQueueSize;
 
 public:
-    SortFile();
+    SortFile(string index);
     virtual ~SortFile();
-    void sort(string filename);
+    void sort();
 
 private:
-    void split(string filename);
+    void createNewIndexFile(string filename);
+
+    void split();
+    void dumpVector(vector<IndexTerm>* vectorTerms);
+
     void merge();
-    int write();
+    int write(bool isLastMerge);
     void checkFileSize();
+
+    void openVocabulary();
+    void closeVocabulary();
+    void writeVocabulary(unsigned int id, unsigned int seek);
 };
 
 #endif /* SORTFILE_H_ */

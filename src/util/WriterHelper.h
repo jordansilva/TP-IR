@@ -99,6 +99,10 @@ public:
 		return (remove(filename.c_str()) == 0);
 	}
 
+	string getFilename() {
+		return filename;
+	}
+
 	bool isOpen() {
 		return (file != NULL);
 	}

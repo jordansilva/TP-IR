@@ -13,7 +13,7 @@ src/index/Indexer.d: ../src/index/Indexer.cpp ../src/index/Indexer.h \
  ../src/index/../libs/htmlcxx/html/tree.h \
  ../src/index/../libs/htmlcxx/html/utils.h \
  ../src/index/../libs/htmlcxx/html/Node.h ../src/index/Dictionary.h \
- ../src/index/IndexTerm.h
+ ../src/index/Term.h ../src/index/IndexTerm.h
 
 ../src/index/Indexer.h:
 
@@ -50,5 +50,7 @@ src/index/Indexer.d: ../src/index/Indexer.cpp ../src/index/Indexer.h \
 ../src/index/../libs/htmlcxx/html/Node.h:
 
 ../src/index/Dictionary.h:
+
+../src/index/Term.h:
 
 ../src/index/IndexTerm.h:
