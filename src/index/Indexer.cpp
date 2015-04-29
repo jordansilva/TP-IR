@@ -9,7 +9,7 @@
 
 Indexer::Indexer(string directoryName) {
 	directory = directoryName;
-	writer = new WriterHelper(directory + "/file0.index", true);
+	writer = new WriterHelper(directory + "/file.index", true);
 	countDocuments = 0;
 }
 

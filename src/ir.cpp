@@ -16,6 +16,7 @@
 
 #define DIRECTORY "/home/jordan/documents/ir/irCollection"
 #define MAPFILE "index.txt"
+#define OUTPUT_DIRECTORY "./output/"
 
 using namespace std;
 using namespace RICPNS;
@@ -76,7 +77,9 @@ int main(int argc, const char * argv[]) {
 	clock_t start = clock();
 	cout << currentDateTime() << endl;
 
-	//index();
+	index();
+
+	//external sort
 	order();
 	//mergeSeek();
 
