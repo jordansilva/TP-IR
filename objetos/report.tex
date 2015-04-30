@@ -1,0 +1,179 @@
+\documentclass[12pt]{article}
+
+\usepackage{sbc-template}
+
+\usepackage{graphicx,url}
+\usepackage[brazil]{babel}   
+%\usepackage[latin1]{inputenc}  
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}  
+\usepackage{listings}
+
+\newcommand{\tab}[1]{\hspace{.05\textwidth}\rlap{#1}}
+% UTF-8 encoding is recommended by ShareLaTex
+
+\sloppy
+
+\title{Recuperação de Informação - Máquinas de Busca na Web\\ Arquivos Invertidos}
+
+\author{Jordan Silva\inst{1} }
+
+\address{
+  Instituto de Ciências Exatas\\
+  Universidade Federal de Minas Gerais (UFMG) -- Belo Horizonte, MG -- Brasil
+  \email{jordan@dcc.ufmg.br}
+}
+
+\begin{document} 
+
+\maketitle
+
+
+\section{Objetivo} \label{sec:goal}
+
+Este trabalho tem como objetivo a implementação de um sistema de programas para recuperar eficientemente informação em grandes arquivos armazenados em memória secundária, utilizando um tipo de índice conhecido como arquivo invertido.
+\\
+\indent A implementação deste sistema foi realizada utilizando a linguagem \textit{C++11}; e como entrada de dados, foi utilizada uma coleção de documentos cedida pelo \textit{LATIN} (Laboratório para Tratamento da Informação)\footnote{\url{http://www.latin.dcc.ufmg.br/}}.
+
+\section{Introdução} \label{sec:intro}
+
+O número de documentos\footnote{Documento é um termo utilizado para páginas de sítios na internet.} encontrados na internet vêm crescendo rapidamente nos últimos anos, estima-se que existem cerca de 47 bilhões de documentos. Além do grande número de documentos encontrados hoje, eles também se tornaram dinâmicos, assim os conteúdos destes podem sofrer de alterações a cada segundo, aumentando a complexidade no gerenciamento dessas informações.
+Tendo em vista isto, podemos perceber o grande desafio que existe na tarefa de recuperação de documentos, dado que uma determinada consulta \boldmath{$Q$} de um usuário \boldmath{$u$}, na qual ele expressa a sua intenção por um conjunto de palavras \boldmath{$T_q,i$} e com isso o sistema consiga retornar o melhor conjunto de documentos\boldmath{$D_n$}.
+
+Os sistemas de buscas são os grandes responsáveis pela realização desta tarefa, de uma forma rápida e precisa, de modo a obter informação que é útil ou relevante para o usuário. Essa etapa de encontrar páginas relacionadas com uma consulta é chamada de recuperação de dados, e quando ela é feita em conjunto com alguma heurística que estima a relevância das páginas para os usuários ela é chamada de recuperação da informação. \cite{Baeza-Yates:1999:MIR:553876}
+
+Nesse trabalho foi construído uma máquina de busca, onde é possível realizar consultas simples. O trabalho teve como objetivo a recuperação de dados, dentro de uma coleção limitada de documentos. Para a recuperação os documentos relacionados à uma consulta de forma eficiente, fez-se necessário a geração de um \textit{índice invertido}, onde cada termo\footnote{Termo é representado por uma palavra do documento.} encontrado em um documento será representado pela quadrupla \textit{< termId, docId, freq, <pos>>}, sendo \textit{termId} é o identificador do termo, \textit{docId} o identificador do documento, \textit{freq} a frequência do termo no documento, \textit{<pos>} as posições que o termo aparece no documento. Dessa forma, para encontrarmos os documentos relacionados à uma consulta será necessário fazer somente uma interseção dos termos da consulta \boldmath{$T_qi$} com os termos encontrados nos documentos \boldmath{$T_di$}.
+
+\section{Filtragem Colaborativa} \label{sec:filtragem}
+
+A técnica de filtragem colaborativa (FC) baseia-se no fato de que as melhores recomendações para um indivíduo podem ser aquelas feitas por pessoas que possuem preferências similares às dele \cite{sampaio2006aprendizagem}. Desta maneira, podemos simplificar que os sistemas que utilizam desta técnica, por natureza, identificam a similaridade entre os usuários e realizam a recomendação baseado nas preferências desses usuários.\\
+\indent De acordo com \cite{kajimoto2007sistemas}, na Filtragem Colaborativa o processo de identificação de um item relevante a um usuário é chamado de "\textit{k-nearest-neighbor}" e segue os seguintes critérios: 
+ 
+\begin{itemize}
+\item Identificação dos usuários similares ao usuário alvo e seus respectivos níveis de similaridade;
+\item Ordenação dos níveis de similaridade para determinação de um novo grupo de usuários que possuem os maiores níveis; 
+\item Verificação das avaliações dadas pelos usuários do novo grupo e definição dos itens mais relevantes a serem recomendados.
+\end{itemize} 
+
+\section{Estrutura de Dados} \label{sec:estrutura-dados}
+
+A estrutura de dados implementada nesta solução consiste em três classes para mapeamento de cada entidade encontrada no MovieLens, que são \textit{User}, \textit{Movie}, \textit{Rating}, e duas classes para agrupamento das informações e armazenamento das predições, que são \textit{TOMovieLens} e \textit{TOUserRec}. Como pode ser visualizado no diagrama (Figura~\ref{fig:estrutura-dados}), não foi realizado nenhum relacionamento de inclusão ou composição entre as classes.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\textwidth]{estrutura-dados.png}
+\caption{Estrutura de Dados}
+\label{fig:estrutura-dados}
+\end{figure}
+
+\section{Algoritmo}\label{sec:algoritmos}
+No contexto deste trabalho foi utilizada a abordagem baseada em usuários, utilizando-se da filtragem colaborativa para recomendação de conteúdo (e.g., filmes, páginas, lugares) através do relacionamentos e aproximação entre usuários.
+\par
+A recomendação de filmes foi implementada utilizando a similaridade entre as avaliações dos usuários, através do \textit{Coeficiente e Correlação de Pearson} (Equação~\ref{eq:pearson}), obtendo assim, a similaridade entre os usuários e possibilitando o agrupamento de usuários com maior similaridade para melhor recomendação.
+Após obter a similaridade entre os usuários, foi utilizada a técnica de agrupamento por vizinhos mais próximos (\textit{k-Nearest Neighbor}), onde é escolhido uma quantidade de usuários (k) que possuem maior semelhança, e assim aplicar o algoritmo de predição\ref{eq:predicao} levando em consideração apenas os \textit{k} usuários com maior similaridade.
+
+\begin{itemize}
+
+\item Pearson
+\begin{equation}
+ \label{eq:pearson}
+ pearson(a,b) = \frac{\sum_{p\in P}{(r_{a,p}-\overline{r_a})\times(r_{b,p}-\overline{r_b})}}{\sqrt{\sum_{p\in P}{(r_{a,p}-\overline{r_a})^{2}}}\times\sqrt{\sum_{p\in P}{(r_{b,p}-\overline{r_b})^{2}}}}
+\end{equation}
+ Onde:
+ \begin{itemize}
+    \item $a$ é o usuário a ter o item $p$ predito;
+    \item $\overline{r_{x}}$ é a média dos \textit{ratings} do usuário $x$;
+  \item $P$ é o conjunto de itens avaliados por $a$ e $b$.
+  \item $r_{x,p}$ é o \textit{rating} do usuário $x$ para o item $p$;
+\end{itemize}
+
+\item Algoritmo de Predição
+\begin{equation}
+ \label{eq:predicao}
+ pred(a, p) = \overline{r_{a}} + \frac{\sum_{b\in N}{sim(a,b) \times (r_{b,p}-\overline{r_b})}}{\sum_{b\in N}{sim(a,b)}}
+\end{equation}
+\noindent Onde:
+\begin{itemize}
+ \item $sim(a,b)$ é a função de similaridade entre os usuários $a$ e $b$;
+ \item $N$ é o conjunto universo dos usuários.
+\end{itemize}
+\end{itemize}
+
+\section{Complexidade do Algoritmo} \label{sec:complexidade}
+
+A ordem de complexidade do algoritmo implementado é de \(N^{2}M + NM\) onde \textit{N} é o número de usuários utilizados e \textit{M} o número de items.
+
+\begin{enumerate}
+\item FOR \textit{u1} \textbf{(N)} \textit{Calcula similaridade para todos os usuários}
+\item \tab{FOR \textit{u2 - u1} \textbf{(N)}}
+\item \tab{\tab{FOR \textit{i} \textbf{(M)} \textit{Calcula correlação de Pearson}}}
+\item \tab{FOR \textit{i} \textbf{(M)} \textit{Realiza a predição para recomendação}}
+\end{enumerate}
+\vspace{5 mm}
+\lstset{language=Java}
+\begin{lstlisting}[frame=single,label=exemplo-java,caption=Exemplo em Java]
+for (int i = 0; i < users.size(); i++)
+    var neighbors;
+    for (int j = i + 1; j < users.size(); j++)
+        neighbors = pearson(ratings[i], ratings[j]);
+    recommendation(items, neighbors, i);
+\end{lstlisting}
+
+\section{Aplicativo} \label{sec:aplicativo}
+
+Neste tópico será descrito como deverá ser utilizado o aplicativo, assim como algumas particularidades e variáveis que foram implementadas neste exercício.
+
+\subsection{Executando a Aplicação}
+
+A execução da aplicação deverá ser realizada via linha de comando, utilizando o \textbf{Java SE 8}. A instrução deverá ser ser a seguinte: \textbf{java -jar tp1.jar Recommender <user> <item> <ratings>}. Onde as entradas de dados deverão estar no padrão a seguir:
+\vspace{5 mm}
+\begin{description}
+\item[User] \hfill \\
+id | age | gender | occupation | zip code \\
+\textbf{Exemplo:} 1|24|M|technician|85711
+\item[Item] \hfill \\
+movie id | movie title | release date | video release date | IMDb URL \\
+\textbf{Exemplo:} 1|Toy Story (1995)|01-Jan-1995||http://us.imdb.com/M/title-exact?Toy\%20Story\%20(1995)
+\item[Ratings] \hfill \\
+<user id> <item id> <rating> <timestamp> \\
+\textbf{Exemplo:} 1 1 5 874965758
+
+\end{description}
+\vspace{5 mm}
+\noindent
+Caso as entradas de dados estejam incorretas será gerada uma exceção contendo a mensagem \textit{"Input arguments are missing or invalid!"}.
+
+\subsection{Saída de Dados}
+
+A saída de dados será gerada após as recomendações serem realizadas, ao final do processamento das informações será gerado um arquivo \textit{recommendations.txt} contendo os resultados. O arquivo de saída conterá 100 recomendações de itens não avaliados pelo usuário (N), resultando em um total de \textit{N} x 100 linhas, variando de acordo com a entrada de dados contendo os usuários. 
+
+\subsection{Testes de Implementação}
+
+Os testes e a implementação foram realizadas utilizando como entrada de dados os arquivos u.user, u.item, e ua.base disponibilizados no data set da MovieLens 100k\cite{movielens100k}. O tempo de processamento e geração de recomendação neste cenário foi de 185 segundos, utilizando um \textbf{MacBook Pro 13-inc, Mid 2012; 2,5 GHz Intel Core i5; 16 GB 1600 MHz DDR3; OS X 10.9.4 (13E28)}.
+
+\subsection{Parametrização}
+
+O aplicativo possuí alguns métodos e constantes que podem ser ajustados. Elas representam a \textit{Quantidade de Recomendações} que serão geradas, \textit{Alcance da Vizinhança} que será utilizada, \textit{Peso de Significância} utilizado para equilibrar o algoritmo de similaridade quando os usuários possuem poucas avaliações em comum. Os valores padrões utilizados são:
+
+\begin{description}
+\item[Quantidade de Recomendações] 100
+\item[Alcance da Vizinhança] 20
+\item[Peso de Significância] 50
+\end{description}
+Também foi implementado no \textit{Algoritmo de Correlação de Pearson} (Equação~\ref{eq:pearson}) a possibilidade de utilizar tanto a interseção da avaliação dos itens entre os usuários, como também a união desses itens, utilizando do valor 0 para os itens que não foram avaliados pelo usuário.
+
+\subsection{Implementação}
+
+De forma sucinta, os procedimentos realizados pelo aplicativo são: Leitura das Entradas de Dados e Mapeamento para Classes de Domínio do Aplicativo; Execução do Algoritmo de Similaridade entre os Usuários; Execução do Algoritmo de Predição de Avaliação para cada Item, de acordo com os Usuários Vizinhos; Resultado da Recomendação.
+
+\section{Conclusão} \label{sec:conclusao}
+
+Com esta pequena implementação e teste, pude notar a imensidão e as infinitas possibilidades que podem ser exploradas para recomendações tanto na Filtragem Colaborativa, como também na Baseada em Conteúdo.\\
+\indent Durante a implementação deste algoritmo, notei várias possibilidades e variantes que podem existir nos Sistemas de Recomendação, e que devem ser testadas e ajustadas para uma melhor recomendação. Existem várias melhorias a serem realizadas neste sistema, como métricas e avaliações afim de mensurar a eficiência na recomendação.\\
+\indent Assim, pretendo em versões futuras, realizar testes mais concretos e ajustes no algoritmo, tal como implementar a similaridade utilizando Cosseno ao invés de Pearson, implementar Recomendação Baseada em Item e realizar medições para comparação, com a finalidade de aprendizado e comportamento desses algoritmos.
+
+\newpage
+\bibliographystyle{sbc}
+\bibliography{sbc-template}\nocite{*}
+
+\end{document}
