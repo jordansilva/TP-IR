@@ -19,6 +19,7 @@ using namespace boost;
 class Dictionary {
 public:
 	Dictionary();
+	Dictionary(string filename);
 	virtual ~Dictionary();
 	unsigned int AddTerm(string term);
 	unsigned int AddTerm(string term, unsigned int seek);
