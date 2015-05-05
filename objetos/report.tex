@@ -178,7 +178,6 @@ Essa classe possui os seguintes métodos:
 \label{fig:textParser}
 \end{figure}
 
-\subsection{Diretório \textit{search}} \label{ssec:search}
 \subsection{Diretório \textit{util}} \label{ssec:util}
 
 Esse diretório possuí classes genéricas que podem ser utilizadas em diversos programas ou contextos. Nesse diretório estão contido as seguintes classes \textit{SortFile} destinada para a ordenação externa, e a classe \textit{WriterHelper}, que auxilia na leitura e gravação de arquivos.
@@ -274,7 +273,7 @@ A Tabela~\ref{tab:infobase} apresenta a quantidade de termos indexados a partir 
 \begin{tabular}{|l|c|c|c|c|}
 \hline
 \multicolumn{1}{|c|}{Descrição} & \begin{tabular}[c]{@{}c@{}}Tempo de\\ Execução\end{tabular} & \begin{tabular}[c]{@{}c@{}}Quantidade de\\ Termos\end{tabular} & \begin{tabular}[c]{@{}c@{}}Tamanho do\\ Índice\end{tabular} & \begin{tabular}[c]{@{}c@{}}Tamanho do\\ Vocabulário\end{tabular} \\ \hline
-Indexação utilizada             & 1716 segundos                                               & 4.751.387                                                      & 3,9GB                                                       & 172,3MB                                                          \\ \hline
+Indexação utilizada             & 1716 segundos                                               & 4.751.387                                                      & 3,9GB                                                       & 146,4MB                                                          \\ \hline
 Indexação com numerais          & 1763 segundos                                               & 6.287.294                                                      & 4GB                                                         & 207,4MB                                                          \\ \hline
 \end{tabular}
 \caption{Comparativo da criação da lista invertida}
@@ -283,7 +282,7 @@ Indexação com numerais          & 1763 segundos                               
 
 Após a criação da lista invertida, o sistema realiza a ordenação externa dessa lista. A ordenação ocorre em três que são: (1) A divisão da lista invertida em vários arquivos de \textbf{10MB}; (2) a ordernação externa desses arquivos, realizando uma junção de no máximo \textbf{50 runs} por vez, utilizando uma esturtura \textit{heap} de \textbf{10MB} para ordenação desses registros; (3) e por fim a geração do vocabulário contendo a posição inicial de cada termo no índice ordenado. Esse algoritmo é similar ao algoritmo \textit{External Merge Sort}, assim a sua complexidade no pior caso se dá por \boldmath{$\log_{r} n/m$}, onde {$r$} é a quantidade das \textit{runs}; {$n$} a quantidade total de arquivos à serem ordenados; e {$m$} é a quantidade de registros que podem ser ordenados na memória\cite{ziviani2004projeto}.
 
-Esse processo foi realizado com as configurações descritas na Tabela~\ref{tab:order}, onde o tempo foram gerados \textit{382 arquivos}, e levando \textit{592 segundos} para ordenar uma lista de 3,8GB (Tabela~\ref{tab:order2}).
+Esse processo foi realizado com as configurações descritas na Tabela~\ref{tab:order}, onde foram gerados \textit{385 arquivos}, e demorando \textit{631 segundos} para ordenar uma lista de 3,9GB (Tabela~\ref{tab:order2}).
 
 \begin{table}[ht]
 \centering
@@ -303,12 +302,30 @@ Tamanho dos Arquivos               & 10MB                       \\ \hline
 \begin{tabular}{|l|c|c|c|c|}
 \hline
 \multicolumn{1}{|c|}{Descrição} & \begin{tabular}[c]{@{}c@{}}Tempo de\\ Execução\end{tabular} & \begin{tabular}[c]{@{}c@{}}Quantidade de\\ Termos\end{tabular} & \begin{tabular}[c]{@{}c@{}}Quantidade de\\ Arquivos\end{tabular}  \\ \hline
-Indexação utilizada             & 592 segundos & 4.751.387 & 385     \\ \hline
+Indexação utilizada             & 631 segundos & 4.751.387 & 385     \\ \hline
 Indexação com numerais          & 765 segundos & 6.287.294 & 405       \\ \hline
 \end{tabular}
 \caption{Comparativo da ordenação do índice invertido}
 \label{tab:order2}
 \end{table}
+
+Durante os testes conseguimos verificar o comportamento do vocabulário, assim como seu crescimento durante a indexação dos documentos. A Figura~\ref{fig:graphNewTerms} mostra o crescimento do vocabulário a cada 10 mil arquivos indexados. Observamos assim que o vocabulário tem um crescimento acentuado no ínicio do processo, tendo um ganho dede termos significativo nos 70 mil primeiros documentos. Após isso, o crescimento do vocabulário mantém um padrão de 40 mil novos termos a cada 10 mil documentos, tendo uma média de 4 novos termos por documento indexado. 
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\textwidth]{images/graph-terms.png}
+\label{fig:graphNewTerms}
+\caption{Gráfico de Crescimento do Vocabulário}
+\end{figure}
+
+Após todos os processos: indexação\ref{sssec:indexer}, ordenação\ref{sssec:sortfile}, o programa possibilitou uma recuperação de documentos através de consultas booleanas, como apresentado na Figura~(\ref{fig:query}). Todas as consultas executadas demoraram menos de 0.01 segundos para serem executadas.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=1\textwidth]{images/query.png}
+\label{fig:graphNewTerms}
+\caption{Gráfico de Crescimento do Vocabulário}
+\end{figure}
 
 
 \section{Conclusão} \label{sec:conclusion}
