@@ -3,3 +3,4 @@ seek.terms
 vocabulary.terms
 file.index
 inverted.index
+output/

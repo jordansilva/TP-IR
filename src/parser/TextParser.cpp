@@ -24,12 +24,7 @@ void TextParser::Process(string text) {
 	boost::to_lower(text);
 	removeAccents(text);
 
-	//	boost::replace_all(text, "\t", "");
-	//	boost::replace_all(text, "\r\n", "");
-	//	boost::replace_all(text, "\n", "");
-	//	boost::replace_all(text, "\b", "");
-
-	char_separator<char> sep(",\t\r\n\b\v\f ");
+	char_separator<char> sep(",.\t\r\n\b\v\f \\");
 	tokenizer<char_separator<char> > tokens(text, sep);
 
 	for (tokenizer<char_separator<char> >::iterator it = tokens.begin(); it != tokens.end(); ++it) {
@@ -44,12 +39,11 @@ void TextParser::Process(string text) {
 }
 
 bool nonAlphaNumeric(char c) {
-	return !(isalpha(c) || isspace(c) || isdigit(c));
+	return !(isalpha(c) || isspace(c)); //isdigit(c)
 }
 
 void TextParser::removeNonAlphanumerics(std::string &str) {
-	str.erase(std::remove_if(str.begin(), str.end(), nonAlphaNumeric),
-			str.end());
+	str.erase(std::remove_if(str.begin(), str.end(), nonAlphaNumeric), str.end());
 }
 
 void TextParser::removeAccents(string &str) {

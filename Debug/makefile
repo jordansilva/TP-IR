@@ -10,6 +10,7 @@ RM := rm -rf
 -include sources.mk
 -include subdir.mk
 -include src/util/subdir.mk
+-include src/search/subdir.mk
 -include src/parser/subdir.mk
 -include src/libs/zlib/subdir.mk
 -include src/libs/reader/subdir.mk

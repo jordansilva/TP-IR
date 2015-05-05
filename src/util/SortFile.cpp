@@ -241,8 +241,10 @@ void SortFile::mergeVocabulary(string file, string fileSeek, string outputDirect
 		}
 	}
 
-	remove(file.c_str());
-	remove(fileSeek.c_str());
+	writer.close();
+	remove((outputDirectory + "/" + file).c_str());
+	writerSeek.close();
+	remove((outputDirectory + "/" + fileSeek).c_str());
 
 	vocabularyWriter.close();
 }
