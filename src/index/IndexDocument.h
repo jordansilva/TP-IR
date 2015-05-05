@@ -11,9 +11,9 @@
 #include <iostream>
 #include <boost/algorithm/string.hpp>
 #include "../libs/reader/CollectionReader.h"
-#include "../libs/htmlcxx/html/ParserDom.h"
-#include "../libs/htmlcxx/html/utils.h"
-#include "../libs/htmlcxx/html/Node.h"
+#include <htmlcxx/html/ParserDom.h>
+#include <htmlcxx/html/utils.h>
+#include <htmlcxx/html/Node.h>
 
 using namespace htmlcxx;
 using namespace RICPNS;

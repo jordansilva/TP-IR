@@ -16,7 +16,7 @@ Dictionary::Dictionary(string filename) {
 	terms->clear();
 	if (!loadDictionary(filename))
 	{
-		cout << "Vocabulário não encontrado. Nome do arquivo: " << filename << endl;
+        //cout << "Vocabulário não encontrado. Nome do arquivo: " << filename << endl;
 		throw;
 	}
 }

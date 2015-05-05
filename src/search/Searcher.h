@@ -5,7 +5,7 @@
  *      Author: jordan
  */
 
-#ifndef SEARCHER_H_i
+#ifndef SEARCHER_H_
 #define SEARCHER_H_
 
 #include <string>
