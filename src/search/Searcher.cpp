@@ -10,7 +10,11 @@
 Searcher::Searcher(string directory, string index, string vocabulary, string documents) {
 	//open index file
 	mIndex = new WriterHelper(directory + "/" + index, false);
+	cout << "Loading terms..." << endl;
+
 	mDictionary = new Dictionary(directory + "/" + vocabulary);
+	cout << "Loading documents..." << endl;
+
 	loadDocuments(directory + "/" + documents);
 	//open vocabulary
 
@@ -53,20 +57,20 @@ vector<string> Searcher::search(string query) {
 		boost::trim(token);
 
 		if (!token.empty()) {
-			if (query == "AND") {
+			if (token == "AND") {
 				boolCondition = 1;
-			} else if (query == "OR") {
+			} else if (token == "OR") {
 				boolCondition = 2;
 			} else {
-				boost::to_lower(query);
-				Term* term = mDictionary->find(query);
+				boost::to_lower(token);
+				Term* term = mDictionary->find(token);
 
 				if (term) {
-					vector<unsigned int> recoveryItems = recoverIndexTerms(term);
-					if (boolCondition == 2)
-						documents = unionVec(documents, recoveryItems);
-					else
+					vector<unsigned int> recoveryItems = recoverIndexTerms(*term);
+					if (boolCondition == 1)
 						documents = intersectionVec(documents, recoveryItems);
+					else
+						documents = unionVec(documents, recoveryItems);
 				}
 				boolCondition = 0;
 			}
@@ -86,12 +90,12 @@ vector<string> Searcher::search(string query) {
 	return documentsNames;
 }
 
-vector<unsigned int> Searcher::recoverIndexTerms(Term* term) {
+vector<unsigned int> Searcher::recoverIndexTerms(Term term) {
 	vector<unsigned int> docs;
-	mIndex->SetPosition(term->indexSeek);
+	mIndex->SetPosition(term.indexSeek);
 	while (mIndex->HasNext()) {
 		IndexTerm indexTerm = mIndex->ReadIndex();
-		if (indexTerm.termId == term->id)
+		if (indexTerm.termId == term.id)
 			docs.push_back(indexTerm.documentId);
 		else
 			break;

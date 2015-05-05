@@ -24,7 +24,7 @@ private:
 	Dictionary* mDictionary;
 	map<unsigned int, string> mDocuments;
 	vector<Term*> getTermsFromVocabulary(string query);
-	vector<unsigned int> recoverIndexTerms(Term* term);
+	vector<unsigned int> recoverIndexTerms(Term term);
 	bool loadDocuments(string filename);
 	vector<unsigned int> intersectionVec(vector<unsigned int> &v1, vector<unsigned int> &v2);
 	vector<unsigned int> unionVec(vector<unsigned int> &v1, vector<unsigned int> &v2);

@@ -12,7 +12,6 @@ SortFile::SortFile(string directory, string filename) {
 	mWriter = NULL;
 	mOutputDirectory = directory;
 	mQueue = new priority_queue<IndexTerm, vector<IndexTerm> , greater<IndexTerm> > ();
-
 	execute(directory + "/" + filename);
 }
 

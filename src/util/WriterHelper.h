@@ -74,7 +74,7 @@ public:
 		return ftell(file);
 	}
 
-	void SetPosition(int position) {
+	void SetPosition(unsigned int position) {
 		CheckFile();
 		fseek(file, position, SEEK_SET);
 	}
