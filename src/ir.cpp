@@ -106,21 +106,29 @@ int main(int argc, const char * argv[]) {
 			cout << "This query will be search Jordan and Silva intersection, and will group with the UFMG results." << endl;
 			cout << "======================" << endl;
 			//cout << "Or you can type 'EXIT' to quit also.";
+
+			clock_t start = clock();
+			clock_t end;
 			do {
 				query = "";
 				cout << "\n\nWhat you would like to search? (Or type 'EXIT' to quit)" << endl;
 				getline(cin, query);
-
 				if (query == "EXIT")
 					break;
 
+				start = clock();
 				vector<string> results = s.search(query);
 				if (results.size() > 0) {
 					int size = 10;
 					if (results.size() < 10)
 						size = results.size();
 
+
+					end = clock();
+					double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
+
 					cout << results.size() << " documents were found.\n" << endl;
+					cout << "This query took " << elapsed_secs << " seconds to run." << endl;
 					cout << "Top " << size << " documents" << endl;
 					cout << "================" << endl;
 					for (int i = 0; i < size; i++)
