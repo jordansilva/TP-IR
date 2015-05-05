@@ -17,6 +17,6 @@ make
 ```
 
 ## Methods
-* index <directory> <index> [output] - initializes the index
+* index \<directory\> \<index\> [output] - initializes the index
 * search [directory] [inverted-index] [vocabulary] [documents] - initializes the search program
 
