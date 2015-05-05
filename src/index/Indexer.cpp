@@ -10,7 +10,10 @@
 Indexer::Indexer(string directory, string mapfile, string output) {
 	mOutputDirectory = output;
 	mWriter = new WriterHelper(mOutputDirectory + INDEX_NAME, true);
-	execute(directory, mapfile);
+	if (mWriter->isOpen())
+		execute(directory, mapfile);
+	else
+		cout << "File " << mOutputDirectory + INDEX_NAME << "doesn't exists!";
 }
 
 Indexer::~Indexer() {
@@ -21,10 +24,10 @@ Indexer::~Indexer() {
 void Indexer::execute(string directory, string mapfile) {
 	CollectionReader reader(directory, mapfile);
 	ofstream mDocumentsWriter(mOutputDirectory + DOCUMENTS_NAME);
-	
+
 	//read documents
 	Document doc;
-	int countNonValids =0;
+	int countNonValids = 0;
 	int count = 0;
 
 	while (reader.getNextDocument(doc)) {
@@ -38,7 +41,8 @@ void Indexer::execute(string directory, string mapfile) {
 
 			//progress
 			if (count % 10000 == 0)
-				cout << "Documentos indexados: " << count << " |"  << "size: " << mDictionary.getTerms()->size() << endl;
+				cout << "Documentos indexados: " << count << " |" << "size: "
+						<< mDictionary.getTerms()->size() << endl;
 		}
 	}
 
@@ -55,7 +59,7 @@ void Indexer::add(IndexDocument &document, int documentId) {
 	unordered_map<string, vector<int> > terms = mParser.GetTerms();
 	unordered_map<string, vector<int> >::iterator it = terms.begin();
 	unordered_map<string, vector<int> >::iterator end = terms.end();
-	
+
 	unsigned int termId = 0;
 	for (; it != end; ++it) {
 		termId = mDictionary.AddTerm(it->first);

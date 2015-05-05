@@ -32,55 +32,92 @@ const std::string currentDateTime() {
 
 int main(int argc, const char * argv[]) {
 
-	clock_t start = clock();
-	cout << currentDateTime() << endl;
-
 	cout << "Indexer 0.1" << endl;
 	cout << "@author jordansilva" << endl;
-	cout << "index <directory> <index> [output] \t\t -initializes the indexing of the collection"
-			<< end;
-	cout
-			<< "search [directory] [inverted-index] [vocabulary] [documents] \t\t -initializes the search program"
-			<< end;
+	cout << "index <directory> <index> [output] \t -initializes the index" << endl;
+	cout << "search [directory] [inverted-index] [vocabulary] [documents] \t -initializes the search program" << endl;
+	cout << "EXIT \t -to exit program" << endl << endl << endl;
 
-	string command;
-	string directory;
-	string index;
-	string extra1;
-	string extra2;
-	while (command != "EXIT") {
-		cin << command << directory << index << extra1 << extra2;
-		boost::trim(command);
-		boost::trim(directory);
-		boost::trim(index);
-		boost::trim(extra1);
-		boost::trim(extra2);
-		if (command == "index") {
-			if (index.empty())
-				index = MAPFILE;
-
-			if (extra1.empty())
-				extra1 = OUTPUT_DIRECTORY;
-
-			Indexer indexer(directory, index, extra1);
-			SortFile sort(extra1, "file.index");
+	string args;
+	string command[5];
+	int i = 0;
+	string token = "";
+	while (args != "EXIT") {
+		getline(cin, args);
+		char_separator<char> sep(" ");
+		tokenizer<char_separator<char> > tokens(args, sep);
+		i = 0;
+		token.clear();
+		for (tokenizer<char_separator<char> >::iterator it = tokens.begin(); it != tokens.end(); ++it) {
+			token = it.current_token();
+			boost::trim(token);
+			command[i] = "";
+			command[i] = token;
+			cout << token << endl;
+			i++;
 		}
-		if (command == "search") {
-			if (directory.empty())
-				extra1 = OUTPUT_DIRECTORY;
-			if ()
 
-		}
+		if (command[0] == "index") {
+			if (command[2].empty())
+				command[2] = MAPFILE;
+
+			if (command[3].empty())
+				command[3] = OUTPUT_DIRECTORY;
+
+			//indexer
+			clock_t start = clock();
+			Indexer indexer(command[1], command[2], command[3]);
+			clock_t end = clock();
+			double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
+			cout << "Indexer finish. Time elapsed: " << elapsed_secs << endl;
+
+			//external sort
+			start = clock();
+			SortFile sort(command[3], "file.index");
+			end = clock();
+			elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
+			cout << "Sort finish. Time elapsed: " << elapsed_secs << endl;
+			//merge vocabulary
+			start = clock();
+			SortFile::mergeVocabulary("file.terms", "seek.terms", command[3]);
+			end = clock();
+			elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
+			cout << "Merge finish. Time elapsed: " << elapsed_secs << endl;
+
+		} else if (command[0] == "search") {
+			if (command[1].empty())
+				command[1] = OUTPUT_DIRECTORY;
+			if (command[2].empty())
+				command[2] = "inverted.index";
+			if (command[3].empty())
+				command[3] = "vocabulary.terms";
+			if (command[4].empty())
+				command[4] = "file.documents";
+
+			Searcher s(command[1], command[2], command[3], command[4]);
+
+			string query;
+			cout << "Welcome to IR Search by Jordan Silva." << endl;
+			cout << "To search more than one term, use AND or OR to concatenate them in the query." << endl;
+			cout << "Query example: 'Jordan AND Silva OR UFMG'" << endl;
+			cout << "This query will be search Jordan and Silva intersection, and will group with the UFMG results." << endl;
+			//cout << "Or you can type 'EXIT' to quit also.";
+			do {
+				cout << "What you would like to search? (Or type 'EXIT' to quit)" << endl;
+				cin >> query;
+
+				if (query == "EXIT")
+					break;
+
+				vector<string> results = s.search(query);
+				for (std::vector<string>::iterator it = results.begin(); it != results.end(); ++it)
+					cout << *it << endl;
+			} while (query != "EXIT");
+		} else if (command[0] == "EXIT")
+			break;
+		else
+			cout << "Unknown command" << endl;
 	}
-
-	//index
-
-
-	//external sort
-
-
-	//merge vocabulary
-	SortFile::mergeVocabulary("file.terms", "seek.terms", OUTPUT_DIRECTORY);
 
 	//	Searcher s(OUTPUT_DIRECTORY, "inverted.index", "vocabulary.terms", "file.documents");
 	//	string query;
@@ -114,11 +151,11 @@ int main(int argc, const char * argv[]) {
 	//search();
 	//cin;
 	//Count time
-	clock_t end = clock();
-	double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
-	cout << "All files was indexed. Time elapsed: " << elapsed_secs << endl;
-	cout << currentDateTime() << endl;
-	cout << "All files was indexed" << endl;
+//	clock_t end = clock();
+//	double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
+//	cout << "All files was indexed. Time elapsed: " << elapsed_secs << endl;
+//	cout << currentDateTime() << endl;
+//	cout << "All files was indexed" << endl;
 
 	//Read index
 	//	WriterHelper wHelper("./output/_merged414.index", false);
