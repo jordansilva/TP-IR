@@ -19,6 +19,7 @@
 
 #define INDEX_NAME "file.index"
 #define VOCABULARY_NAME "file.terms"
+#define DOCUMENTS_NAME "file.documents"
 
 using namespace RICPNS;
 using namespace htmlcxx;

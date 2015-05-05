@@ -15,7 +15,9 @@ src/ir.d: ../src/ir.cpp ../src/util/SortFile.h \
  ../src/index/../libs/htmlcxx/html/tree.h \
  ../src/index/../libs/htmlcxx/html/utils.h \
  ../src/index/../libs/htmlcxx/html/Node.h ../src/index/IndexTerm.h \
- ../src/index/Dictionary.h ../src/index/Term.h
+ ../src/index/Dictionary.h ../src/index/Term.h ../src/search/Searcher.h \
+ ../src/search/../util/WriterHelper.h ../src/search/../index/Dictionary.h \
+ ../src/search/../index/Term.h ../src/search/../index/IndexDocument.h
 
 ../src/util/SortFile.h:
 
@@ -62,3 +64,13 @@ src/ir.d: ../src/ir.cpp ../src/util/SortFile.h \
 ../src/index/Dictionary.h:
 
 ../src/index/Term.h:
+
+../src/search/Searcher.h:
+
+../src/search/../util/WriterHelper.h:
+
+../src/search/../index/Dictionary.h:
+
+../src/search/../index/Term.h:
+
+../src/search/../index/IndexDocument.h:

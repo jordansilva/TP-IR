@@ -20,26 +20,33 @@ Indexer::~Indexer() {
 //Indexer
 void Indexer::execute(string directory, string mapfile) {
 	CollectionReader reader(directory, mapfile);
+	ofstream mDocumentsWriter(mOutputDirectory + DOCUMENTS_NAME);
 	
 	//read documents
 	Document doc;
+	int countNonValids =0;
 	int count = 0;
 
 	while (reader.getNextDocument(doc)) {
+		countNonValids++;
 		if (isValidDocument(doc.getURL())) {
 			count++;
 
 			IndexDocument indexDocument(doc);
 			add(indexDocument, count);
+			mDocumentsWriter << count << " " << doc.getURL() << endl;
 
 			//progress
 			if (count % 10000 == 0)
-				cout << "Documentos indexados: " << count << endl;
+				cout << "Documentos indexados: " << count << " |"  << "size: " << mDictionary.getTerms()->size() << endl;
 		}
 	}
 
+	cout << "countNonValids: " << countNonValids << endl;
+	cout << "countValids: " << count << endl;
 	//Dump Vocabulary
 	dumpVocabulary();
+	mDocumentsWriter.close();
 }
 
 void Indexer::add(IndexDocument &document, int documentId) {

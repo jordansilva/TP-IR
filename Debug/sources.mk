@@ -24,6 +24,7 @@ C_DEPS :=
 # Every subdirectory with source files must be described here
 SUBDIRS := \
 src/util \
+src/search \
 src/parser \
 src/libs/zlib \
 src/libs/reader \
