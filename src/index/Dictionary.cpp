@@ -12,6 +12,7 @@ Dictionary::Dictionary() {
 }
 
 Dictionary::Dictionary(string filename) {
+	terms = new unordered_map<string, Term> ();
 	terms->clear();
 	if (!loadDictionary(filename))
 	{
