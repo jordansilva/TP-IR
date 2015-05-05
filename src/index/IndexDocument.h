@@ -36,7 +36,7 @@ public:
 private:
 	bool IsScript(string item);
 	void ReadDocument(Document document);
-	bool RemoveHeader(string& str);
+	bool RemoveHeader(string& html);
 	string url;
 	string title;
 	string text;

@@ -190,17 +190,22 @@ int SortFile::write(bool isLastMerge) {
 }
 
 void SortFile::openVocabulary() {
+	//open file with terms and their seeks
 	mVocabularyWriter.open(mOutputDirectory + "seek.terms");
 }
 
 void SortFile::closeVocabulary() {
+	//close vocabulary
 	mVocabularyWriter.close();
 }
 
 void SortFile::writeVocabulary(unsigned int id, unsigned int seek) {
+	//writes term id and seek;
 	mVocabularyWriter << id << " " << seek << endl;
 }
 
+//This method reads the vocabulary with description of term and id, and merges with term-id 
+//and seek position in inverted index
 void SortFile::mergeVocabulary(string file, string fileSeek, string outputDirectory) {
 	ifstream writer(outputDirectory + "/" + file);
 	ifstream writerSeek(outputDirectory + "/" + fileSeek);

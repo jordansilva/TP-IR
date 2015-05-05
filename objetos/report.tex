@@ -40,139 +40,286 @@ Este trabalho tem como objetivo a implementação de um sistema de programas par
 O número de documentos\footnote{Documento é um termo utilizado para páginas de sítios na internet.} encontrados na internet vêm crescendo rapidamente nos últimos anos, estima-se que existem cerca de 47 bilhões de documentos. Além do grande número de documentos encontrados hoje, eles também se tornaram dinâmicos, assim os conteúdos destes podem sofrer de alterações a cada segundo, aumentando a complexidade no gerenciamento dessas informações.
 Tendo em vista isto, podemos perceber o grande desafio que existe na tarefa de recuperação de documentos, dado que uma determinada consulta \boldmath{$Q$} de um usuário \boldmath{$u$}, na qual ele expressa a sua intenção por um conjunto de palavras \boldmath{$T_q,i$} e com isso o sistema consiga retornar o melhor conjunto de documentos\boldmath{$D_n$}.
 
-Os sistemas de buscas são os grandes responsáveis pela realização desta tarefa, de uma forma rápida e precisa, de modo a obter informação que é útil ou relevante para o usuário. Essa etapa de encontrar páginas relacionadas com uma consulta é chamada de recuperação de dados, e quando ela é feita em conjunto com alguma heurística que estima a relevância das páginas para os usuários ela é chamada de recuperação da informação. \cite{Baeza-Yates:1999:MIR:553876}
+Os sistemas de buscas são os grandes responsáveis pela realização desta tarefa, de uma forma rápida e precisa, de modo a obter informação que é útil ou relevante para o usuário. Essa etapa de encontrar páginas relacionadas com uma consulta é chamada de recuperação de dados, e quando ela é feita em conjunto com alguma heurística que estima a relevância das páginas para os usuários ela é chamada de recuperação de informação. \cite{Baeza-Yates:1999:MIR:553876}
 
-Nesse trabalho foi construído uma máquina de busca, onde é possível realizar consultas simples. O trabalho teve como objetivo a recuperação de dados, dentro de uma coleção limitada de documentos. Para a recuperação os documentos relacionados à uma consulta de forma eficiente, fez-se necessário a geração de um \textit{índice invertido}, onde cada termo\footnote{Termo é representado por uma palavra do documento.} encontrado em um documento será representado pela quadrupla \textit{< termId, docId, freq, <pos>>}, sendo \textit{termId} é o identificador do termo, \textit{docId} o identificador do documento, \textit{freq} a frequência do termo no documento, \textit{<pos>} as posições que o termo aparece no documento. Dessa forma, para encontrarmos os documentos relacionados à uma consulta será necessário fazer somente uma interseção dos termos da consulta \boldmath{$T_qi$} com os termos encontrados nos documentos \boldmath{$T_di$}.
+Nesse trabalho foi construído uma máquina de busca, onde é possível realizar consultas simples. O trabalho teve como objetivo a recuperação de dados, dentro de uma coleção limitada de documentos. Para a recuperação os documentos relacionados à uma consulta de forma eficiente, fez-se necessário a geração de um \textit{índice invertido}, onde cada termo\footnote{Termo é representado por uma palavra do documento.} encontrado em um documento será representado pela quadrupla \textit{< termId, docId, freq, <pos>>}, sendo \textit{termId} é o identificador do termo, \textit{docId} o identificador do documento, \textit{freq} a frequência do termo no documento, \textit{<pos>} as posições que o termo aparece no documento \cite{witten1999managing}. Dessa forma, para encontrarmos os documentos relacionados à uma consulta será necessário fazer somente uma interseção dos termos da consulta \boldmath{$T_qi$} com os termos encontrados nos documentos \boldmath{$T_di$}.
 
-\section{Filtragem Colaborativa} \label{sec:filtragem}
+O trabalho será organizado da seguinte maneira. Na próxima seção será tratada o tema de Recuperação de Informação, e as técnicas utilizadas como base deste trabalho. A Seção 4, será apresentada a arquitetura do projeto e como este foi construído. A Seção 5, ensinará os procedimentos para a execução do sistema. A Seção 6, será abordada as características da coleção de dados utilizada como também a análise e os resultados obtidos. Ao final será apresentada a conclusão do trabalho.
 
-A técnica de filtragem colaborativa (FC) baseia-se no fato de que as melhores recomendações para um indivíduo podem ser aquelas feitas por pessoas que possuem preferências similares às dele \cite{sampaio2006aprendizagem}. Desta maneira, podemos simplificar que os sistemas que utilizam desta técnica, por natureza, identificam a similaridade entre os usuários e realizam a recomendação baseado nas preferências desses usuários.\\
-\indent De acordo com \cite{kajimoto2007sistemas}, na Filtragem Colaborativa o processo de identificação de um item relevante a um usuário é chamado de "\textit{k-nearest-neighbor}" e segue os seguintes critérios: 
- 
+\section{Recuperação de Informação} \label{sec:ir}
+
+De acordo com \cite{singhal2001modern}, a maioria dos Sistemas de Recuperação de Informação em funcionamento hoje, são baseados em uma estrutura de dados conhecida como lista invertida. Essa abordagem permite o acesso rápido a uma lista de documentos que contêm um termo, juntamente com outra informação (e.g., o peso do termo em cada documento, as posições relativas do termo em cada documento, etc.). Uma lista típica invertida pode ser armazenada como:
+
+\begin{equation}
+\label{eq:inverted_index}
+  t_i \to <d_a, ...>,<d_b, ...>,\cdots,<d_n, ...>
+\end{equation}
+
+que descreve que o termo-{$i$} está contido em {$d_a, d_b, \cdots, d_n$}, e pode armazenar outras informações.
+As listas invertidas exploram o fato de que dada consulta do usuário, a maioria dos sistemas de recuperação de informação estão interessados em retornar um pequeno número de documentos que contém algum termo da consulta, eliminando assim os documentos que não possuem nenhum termo, através de uma classificação ou pontuação dada para cada termo-documento. \cite{singhal2001modern} também comenta que grande parte desses sitemas mantém essas pontuações dos documentos em um \textit{heap} e no final do processamento ele retorna os \textit{top} documentos mais bem pontuados para a consulta. Uma vez que todos os documentos são indexados pelos termos que contêm, o processo de geração, construção, e armazenamento das representações desses documentos é chamado de indexação, e os arquivos invertidos resultantes desse processo são chamados de índice invertido.
+
+%TODO: Falar sobre criação dos termos, stop-words, etc.
+
+\section{Arquitetura do Projeto} \label{sec:architeture}
+
+O projeto foi desenvolvido para realizar a indexação e criação do índice invertido, tal como, possibilitar a recuperação de documentos através de \textit{consultas booleanas} - i.e a concatenação de termos da consulta por meio de \textbf{AND} ou \textbf{OR}. O projeto foi distribuído em 5 diretórios de forma a agrupar as classes e funções por responsabilidades em comum. Eles foram divididos da seguinte maneira:
 \begin{itemize}
-\item Identificação dos usuários similares ao usuário alvo e seus respectivos níveis de similaridade;
-\item Ordenação dos níveis de similaridade para determinação de um novo grupo de usuários que possuem os maiores níveis; 
-\item Verificação das avaliações dadas pelos usuários do novo grupo e definição dos itens mais relevantes a serem recomendados.
-\end{itemize} 
+\item index - Responsável pela leitura e indexação dos documentos;
+\item libs  - Bibliotecas externas para apoio na execução do projeto;
+\item parser - Tratamento dos termos do documento, auxilia na criação do índice;
+\item search - Responsável pela execução das consultas através do índice invertido;
+\item util - Responsável por funções genéricas (e.g., ordenação externa, escrita e leitura em arquivos).
+\end{itemize}
 
-\section{Estrutura de Dados} \label{sec:estrutura-dados}
+estes diretórios e seu conjunto de classes serão detalhados a seguir.
 
-A estrutura de dados implementada nesta solução consiste em três classes para mapeamento de cada entidade encontrada no MovieLens, que são \textit{User}, \textit{Movie}, \textit{Rating}, e duas classes para agrupamento das informações e armazenamento das predições, que são \textit{TOMovieLens} e \textit{TOUserRec}. Como pode ser visualizado no diagrama (Figura~\ref{fig:estrutura-dados}), não foi realizado nenhum relacionamento de inclusão ou composição entre as classes.
+\subsection{Diretório \textit{index}}
+
+O conjunto de classes contidas nesse diretório, é responsável pela criação do índice invertido. As classes pertencentes a esse diretório são: \textit{Term, Dictionary, IndexDocument, Indexer, IndexTerm}, que serão detalhadas ao longo desse subtópico.
+
+\subsubsection{Term} \label{sssec:term}
+
+Esta classe é utilizada para armazenamento dos termos do índice em uma memória principal. Ela contém apenas três atributos: um identificador para o termo; o termo em si; e o \textit{seek} (posição do termo) no índice invertido. A classe \textit{Term} conta com alguns construtores para facilitar o instanciamento da mesma.
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=1\textwidth]{estrutura-dados.png}
-\caption{Estrutura de Dados}
-\label{fig:estrutura-dados}
+\includegraphics[width=0.5\textwidth]{images/term.png}
+\label{fig:term}
 \end{figure}
 
-\section{Algoritmo}\label{sec:algoritmos}
-No contexto deste trabalho foi utilizada a abordagem baseada em usuários, utilizando-se da filtragem colaborativa para recomendação de conteúdo (e.g., filmes, páginas, lugares) através do relacionamentos e aproximação entre usuários.
-\par
-A recomendação de filmes foi implementada utilizando a similaridade entre as avaliações dos usuários, através do \textit{Coeficiente e Correlação de Pearson} (Equação~\ref{eq:pearson}), obtendo assim, a similaridade entre os usuários e possibilitando o agrupamento de usuários com maior similaridade para melhor recomendação.
-Após obter a similaridade entre os usuários, foi utilizada a técnica de agrupamento por vizinhos mais próximos (\textit{k-Nearest Neighbor}), onde é escolhido uma quantidade de usuários (k) que possuem maior semelhança, e assim aplicar o algoritmo de predição\ref{eq:predicao} levando em consideração apenas os \textit{k} usuários com maior similaridade.
+\subsubsection{Dictionary} \label{sssec:dictionary}
+
+A classe \textit{Dictionary} é responsável por armazenar o vocabulário em memória principal. O vocabulário é armazenado em uma lista desordenada, contendo como chave a \textit{string} do termo, e uma classe \textit{Termo}\ref{sssec:term} para obter mais informações, como a posição de ínicio do termo no índice invertido. Esta classe possui dois métodos \textit{AddTerm} que permitem adicionar os termos ao vocabulário, como também o método \textit{getTerms} que serve para recuperar todo o vocabulário armazenado.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.5\textwidth]{images/index_dictionary.png}
+\label{fig:dictionary}
+\end{figure}
+
+\subsubsection{IndexDocument} \label{sssec:indexdocument}
+
+A classe \textit{IndexDocument} é responsável por receber um arquivo \textit{Document} da biblioteca \textit{htmlcxx}\ref{sssec:libs}, e extrair informações de \textit{url, título e texto} do documento. Para o funcionamento dessa classe, basta instanciar ela passando como parâmetro um \textit{Document}. Os métodos privados são descritos à seguir: 
+\begin{itemize}
+\item \textit{IsScript(string text)} - Verifica se o texto informado é um javascript, se sim, será ignorado como conteúdo do documento;
+\item \textit{RemoveHeader(string\& html)} - Recebe o conteúdo do documento como parâmetro e remove o cabeçalho HTTP.
+\item \textit{ReadDocument(Document document)} - Recebe um documento como parâmetro (esse método é chamado através do construtor da classe), e realiza a remoção do cabeçalho através do método \textit{RemoveHeader}, logo a seguir, ele varre todo o documento coletando os textos e armazena essas informações em uma variável \textit{text}.
+\end{itemize}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.5\textwidth]{images/indexDocument.png}
+\label{fig:indexDocument}
+\end{figure}
+
+\subsubsection{Indexer} \label{sssec:indexer}
+
+O papel da classe \textit{Indexer} é de extrema importância para o funcionamento do programa. Esta é a classe responsável por realizar quase todo o processo de indexação. Essa classe que dará início ao processo de indexação, e realizará o controle e chamada das outras classes descritas acima. O construtor da classe \textit{Indexer} recebe como parâmetro três variáveis, o \textit{directory} onde é indicado o diretório que está localizada a coleção de documentos; \textit{mapfile} é a variável contendo o nome do arquivo de índice da coleção a ser indexada; \textit{output} diretório onde será criado o índice invertido e vocabulário.
+
+A classe possuí os métodos descritos abaixo:
+\begin{itemize}
+\item \textit{execute(string directory, string mapfile)} - Esse método realiza uma iteração através de todos os documentos da coleção informada, instanciando a classe \textit{IndexDocument}\ref{sssec:indexdocument} com cada documento da coleção. Após esse passo, ele possuirá as informações discriminadas de \textit{url}, \textit{título} e \textit{conteúdo} daquele documento, realizand uma chamada para o método \textit{add}, informando esse novo objeto criado e o seu \textit{id} da iteração;
+\item \textit{add(IndexDocument\& document, int documentId)} - O método \textit{add} executará o análisador de conteúdo do documento, com o objetivo de encontrar os termos contidos no documento, removendo espaços, quebras de linhas, remoção de acentos, entre outros tratamentos. Após esse processo, ele irá adicionar os novos termos não vistos ao vocabulário \textit{mDictionary}; e irá começar o processo de gravação da lista invertida, como informado na Equação~(\ref{eq:inverted_index})).
+\item \textit{dumpVocabulary()} - Gera um arquivo contendo o vocabulário armazenado na variável \textit{mDictionary};
+\item \textit{getDictionary()} - Retornará a variável \textit{mDictionary}\ref{sssec:dictionary} que contém o vocabulário da coleção em memória.
+\end{itemize}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.5\textwidth]{images/indexer.png}
+\label{fig:indexer}
+\end{figure}
+
+\subsubsection{IndexTerm} \label{sssec:indexterm}
+
+Esta classe auxilia na criação da \textit{lista invertida}, como também na ordenação externa para a criação do \textit{índice invertido}. A classe armazenando informações básicas do \textit{termo-documento}, como o \textit{identificador do termo}, \textit{identificador do documento}, \textit{frequência do termo no documento}, \textit{vetor de posições relativas do termo dentro do documento}. O \textit{IndexTerm} possui os seguintes métodos:
+\begin{itemize}
+\item \textit{print} - Este método retorna o conteúdo da classe formatado;
+\item \textit{size} - Realiza o cálculo e retorna do tamanho do objeto em bytes;
+\item \textit{operator> e operator<} - Realiza uma comparação entre duas classes \textit{IndexTerm} e informa se a primeira é maior ou menor que a segunda classe.
+\end{itemize}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.5\textwidth]{images/indexTerm.png}
+\label{fig:indexTerm}
+\end{figure}
+
+
+\subsection{Diretório \textit{libs}} \label{sssec:libs}
+
+Este diretório contém bibliotecas para auxiliar a execução do programa. Elas são:
 
 \begin{itemize}
-
-\item Pearson
-\begin{equation}
- \label{eq:pearson}
- pearson(a,b) = \frac{\sum_{p\in P}{(r_{a,p}-\overline{r_a})\times(r_{b,p}-\overline{r_b})}}{\sqrt{\sum_{p\in P}{(r_{a,p}-\overline{r_a})^{2}}}\times\sqrt{\sum_{p\in P}{(r_{b,p}-\overline{r_b})^{2}}}}
-\end{equation}
- Onde:
- \begin{itemize}
-    \item $a$ é o usuário a ter o item $p$ predito;
-    \item $\overline{r_{x}}$ é a média dos \textit{ratings} do usuário $x$;
-  \item $P$ é o conjunto de itens avaliados por $a$ e $b$.
-  \item $r_{x,p}$ é o \textit{rating} do usuário $x$ para o item $p$;
+\item htmlcxx - Esta biblioteca é utilizada para analisar o conteúdo do documento HTML. Essa biblioteca realiza a construção de uma árvore para representar o documento HTML. Ela será utilizada para a auxiliar a leitura dos documentos da coleção;
+\item reader - Esta biblioteca foi recomendada pela documentação do trabalho, serve para realizar a leitura da coleção à ser indexada. Ela possui a função de descomprimir a coleção e realizar a leitura dela;
+\item zlib - Utilizada pela biblioteca de leitura dos documentos;
+\item boost - Biblioteca utilizada para apoio no projeto. Essa biblioteca provê as bibliotecas do C++ revisadas e melhoradas.
 \end{itemize}
 
-\item Algoritmo de Predição
-\begin{equation}
- \label{eq:predicao}
- pred(a, p) = \overline{r_{a}} + \frac{\sum_{b\in N}{sim(a,b) \times (r_{b,p}-\overline{r_b})}}{\sum_{b\in N}{sim(a,b)}}
-\end{equation}
-\noindent Onde:
+\subsection{Diretório \textit{parser}}
+
+Este diretório é responsável pela realização por análisar o conteúdo do documento e realizar um tratamento neste. Os tratamentos realizados nesse trabalho foram de remoção de espaços; quebras de linhas; remoção de acentos; remoção de caracteres HTML\textit{Character Entity} \cite{htmlcharref2015}; conversão do conteúdo para minúsculo; remoção de caracteres não alfa-numéricos.
+
+\subsubsection{TextParser}
+
+Essa classe possui os seguintes métodos:
+
 \begin{itemize}
- \item $sim(a,b)$ é a função de similaridade entre os usuários $a$ e $b$;
- \item $N$ é o conjunto universo dos usuários.
+\item \textit{Process(string text)} - Esse método executa a análise da variável \textit{text}, realizando os tratamentos descritos acima. Após a realização do tratamento ele executará o método \textit{AddTerm} para adicionar os termos à uma lista de termos encontrados no texto informado;
+\item \textit{AddTerm(string\& token, int pos)} - Recebe o termo e a posição deste no documento e adiciona eles no vetor de termos-posição;
+\item \textit{removeNonAlphanumerics(string\& token)} - Faz a remoção dos caracteres não alfa-numéricos do termo;
+\item \textit{removeAccents(string\& token)} - Remove os acentos do termo;
 \end{itemize}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.5\textwidth]{images/textParser.png}
+\label{fig:textParser}
+\end{figure}
+
+\subsection{Diretório \textit{search}} \label{ssec:search}
+\subsection{Diretório \textit{util}} \label{ssec:util}
+
+Esse diretório possuí classes genéricas que podem ser utilizadas em diversos programas ou contextos. Nesse diretório estão contido as seguintes classes \textit{SortFile} destinada para a ordenação externa, e a classe \textit{WriterHelper}, que auxilia na leitura e gravação de arquivos.
+
+\subsubsection{SortFile} \label{sssec:sortfile}
+
+Essa classe é responsável por realizar a ordenação externa da \textit{lista invertida}, que resultará no \textit{índice invertido}. O construtor da classe \textit{SortFile} recebe o diretório onde foi gerada a lista, e o nome do arquivo da lista. Após a inicialização da classe, o construtor fará uma chamada ao método \textit{execute} que será responsável por realizar a divisão da lista invertida, através do método \textit{split}, e após, realizará a ordenação externa e juntará os arquivos da lista invertida, com o método \textit{merge}.
+
+\begin{itemize}
+\item \textit{execute(string index)} - Esse método é responsável por realizar a divisão da lista invertida em vários arquivos menores, com o tamanho configurado em uma \textit{constante FILE\_SIZE}, atualmente configurada para dividir o índice em vários arquivos de 10MB; também realiza a chamada do método \textit{merge} que é responsável por ordenar e mesclar os arquivos gerados em um arquivo único contendo o \textit{índice invertido};
+\item \textit{split(string filename)} - Este método recebe o caminho da \textit{lista invertida} e realiza a divisão dela em vários arquivos semi-ordenados. Esses arquivos têm o tamanho configurado na \textit{constante FILE\_SIZE}. A ordenação inicial é realizada dentro de um vetor de \textit{IndexTerm}, preenchido através da lista invertida. Assim que o vetor atingir o tamanho configurado no \textit{FILE\_SIZE}, será criado um arquivo de íncide novo através do método \textit{createNewIndexFile}, e o vetor será esvaziado e escrito no arquivo, com o método \textit{dumpVector};
+\item \textit{createNewIndexFile(string filename)} - Recebe como parâmetro o nome do arquivo à ser criado, e o adiciona em um vector com o nome dos arquivos criados;
+\item \textit{dumpVector(vector<IndexTerm>* vectorTerms)} - Recebe um vetor para ser gravado em um arquivo. O vetor será ordenado, gravado em um arquivo, e será esvaziado após;
+\item \textit{merge()} - Esse método é responsável pela ordenação das \textit{listas invertidas}, o metódo é executado de forma recursiva, até que a lista de arquivos gerados pelo método \textit{split} esteja vazia. O método lê uma quantidade de arquivos simultaneamente, chamados de \textit{RUN}, retirando assim o primeiro registro de cada \textit{RUN}, logo após o segundo registro e assim sucessivamente. Esses registros são armazenados em uma estrutura \textit{HEAP}, onde é realizada uma ordenação automaticamente. Assim que a estrutura \textit{HEAP} alcançar o tamanho especificado pela \textit{constante HEAP\_SIZE}, será retirado o primeiro registro ordenado e gravado em um arquivo de índice. A partir desse momento, a ordem de leitura das \textit{RUNs} será alterada para que seja o próximo registro que a ser incluído no \textit{HEAP} seja da mesma \textit{RUN} que o último registro removido do \textit{HEAP};
+\item \textit{write(bool isLastMerge)} - Método responsável por remover do \textit{HEAP} o primeiro registro ordenado e realizar a escrita desse em um arquivo. Este método possuí um parâmetro \textit{isLastMerge}, que informa se é a última realização de junção dos índices, caso seja positivo, o método criará um arquivo contendo o vocabulário de \textit{term-id} e a sua posição inicial dentro do arquivo de índice, chamado \textit{seek}, este auxiliará nas consultas ao índice;
+\item \textit{writeVocabulary(unsigned int id, unsigned int seek)} - Método responsável por escrever no arquivo de vocabulário, o identificador do termo e sua posição no arquivo de índice;
+\item \textit{mergeVocabulary(string file, string fileSeek, string outputDirectory)} - Recebe como parâmetro o arquivo de vocabulário contendo o identificador do termo e a sua descrição, e um outro arquivo contendo o identificador do termo e a sua posição no \textit{índice invertido}. Esse método realiza uma interseção dessas duas listas, gerando assim um arquivo único de vocabulário contendo o termo, identificador e posição no \textit{índice invertido}.
 \end{itemize}
 
-\section{Complexidade do Algoritmo} \label{sec:complexidade}
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.5\textwidth]{images/sortFile.png}
+\label{fig:sortFile}
+\end{figure}
 
-A ordem de complexidade do algoritmo implementado é de \(N^{2}M + NM\) onde \textit{N} é o número de usuários utilizados e \textit{M} o número de items.
+\subsubsection{WriterHelper} \label{sssec:writerhelper}
 
-\begin{enumerate}
-\item FOR \textit{u1} \textbf{(N)} \textit{Calcula similaridade para todos os usuários}
-\item \tab{FOR \textit{u2 - u1} \textbf{(N)}}
-\item \tab{\tab{FOR \textit{i} \textbf{(M)} \textit{Calcula correlação de Pearson}}}
-\item \tab{FOR \textit{i} \textbf{(M)} \textit{Realiza a predição para recomendação}}
-\end{enumerate}
-\vspace{5 mm}
-\lstset{language=Java}
-\begin{lstlisting}[frame=single,label=exemplo-java,caption=Exemplo em Java]
-for (int i = 0; i < users.size(); i++)
-    var neighbors;
-    for (int j = i + 1; j < users.size(); j++)
-        neighbors = pearson(ratings[i], ratings[j]);
-    recommendation(items, neighbors, i);
-\end{lstlisting}
+Essa classe é responsável por leitura e escrita de arquivos binários. Ela possui os seguintes métodos:
 
-\section{Aplicativo} \label{sec:aplicativo}
+\begin{itemize}
+\item \textit{WriterHelper(string name, bool writeFile)} - O construtor recebe como parâmetro o nome do arquivo e se ele será aberto para escrita ou somente leitura, através dos parâmetros \textit{name} e \textit{writeFile};
+\item \textit{ReadIndex()} - Realiza uma leitura a partir da posição atual, retornando um \textit{IndexTerm}. Funcionará somente para os arquivos de índices gerados pelo programa, ou por uma estrutura de dados idêntica à classe \textit{IndexTerm};
+\item \textit{Read(T* obj)} - Realiza a leitura do arquivo para um objeto \textit{genérico T};
+\item \textit{Write(IndexTerm\& obj)} - Realiza a escrita de um objeto \textit{IndexTerm} em um arquivo;
+\item \textit{WriteText(string text)} - Realiza a escrita de uma \textit{string} em um arquivo;
+\item \textit{HasNext()} - Verifica se existe mais informações no arquivo, caso exista, será retornado \textit{true}, caso o arquivo tenha chegado ao final, será retornado \textit{false};
+\item \textit{CurrentPosition()} - Retorna a posição atual \textit{seek}, dentro do arquivo aberto;
+\item \textit{SetPosition(int position)} - Move o \textit{seek}, para a posição informada pelo parâmetro;
+\item \textit{Open()} - Esse método é chamado somente pelo construtor da classe, onde tentará abrir o arquivo informado;
+\item \textit{Close()} - Realiza o fechamento do arquivo;
+\item \textit{Remove()} - Realiza o fechamento do arquivo e a exclusão do mesmo;
+\item \textit{CheckFile()} - Verifica se o arquivo existe;
+\item \textit{isOpen()} - Retorna se o arquivo está aberto;
+\item \textit{getSize()} - Retorna o tamanho do arquivo em bytes;
+\item \textit{getFilename()} - Retorna o caminho do arquivo;
+\end{itemize}
 
-Neste tópico será descrito como deverá ser utilizado o aplicativo, assim como algumas particularidades e variáveis que foram implementadas neste exercício.
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.5\textwidth]{images/writerHelper.png}
+\label{fig:writerHelper}
+\end{figure}
 
-\subsection{Executando a Aplicação}
+\section{Executando o Sistema} \label{sec:how-to-execute}
 
-A execução da aplicação deverá ser realizada via linha de comando, utilizando o \textbf{Java SE 8}. A instrução deverá ser ser a seguinte: \textbf{java -jar tp1.jar Recommender <user> <item> <ratings>}. Onde as entradas de dados deverão estar no padrão a seguir:
-\vspace{5 mm}
+A execução da aplicação deverá ser realizada via linha de comando, utilizando o \textbf{C++11}. O aplicativo pode ser executado por meio do binário \textbf{ir} ou compilado através das instruções do arquivo \textbf{README} que acompanham o código fonte do programa. O programa possui dois métodos iniciais:
 \begin{description}
-\item[User] \hfill \\
-id | age | gender | occupation | zip code \\
-\textbf{Exemplo:} 1|24|M|technician|85711
-\item[Item] \hfill \\
-movie id | movie title | release date | video release date | IMDb URL \\
-\textbf{Exemplo:} 1|Toy Story (1995)|01-Jan-1995||http://us.imdb.com/M/title-exact?Toy\%20Story\%20(1995)
-\item[Ratings] \hfill \\
-<user id> <item id> <rating> <timestamp> \\
-\textbf{Exemplo:} 1 1 5 874965758
-
+\item[index <directory> <index> {[output]}] - Este método realiza a indexação dos documentos. Os parâmetros \textit{directory} e \textit{index} são obrigatórios, onde respectivamente representam o diretório onde o índice se encontra, e o nome do arquivo de índice. O parâmetro \textit{output} será a pasta que o índice invertido será gerado. Caso o \textit{output} não seja informado, o índice será gerado em uma pasta chamada \textit{output} dentro da pasta onde o programa se encontra.
+\item[search {[directory]} {[inverted-index]} {[vocabulary]} {[documents]}] - Este método inicializa o buscador. Neste método, poderá ser informado o diretório(\textit{directory}) onde os estão localizado os arquivos de índice, vocabulário e documentos gerado pelo método de indexação. Todos os parâmetros são opcionais, assim, se os parâmetros não forem informados, os valores assumidos serão: \textit{output} para o diretório; \textit{inverted.index} para o índice invertido; \textit{vocabulary.terms} para os termos do vocabulário; e \textit{file.documents} para o arquivo contendo os documentos da coleção.
+  \begin{itemize}
+  \item O método search possibilitará a realização de recuperação de documentos na coleção. O método pedirá para que seja realizada uma consulta usando uma estrutura \textit{booleana}. Dado a seguinte consulta \textit{"Jordan \textbf{AND} Silva \textbf{OR} UFMG"}, o buscador realizará uma consulta retornando os documentos que possuem o conjunto de termos \textbf{Jordan Silva} e documentos que possuam o termo \textbf{UFMG}.
+  \end{itemize}
 \end{description}
-\vspace{5 mm}
-\noindent
-Caso as entradas de dados estejam incorretas será gerada uma exceção contendo a mensagem \textit{"Input arguments are missing or invalid!"}.
 
-\subsection{Saída de Dados}
+\section{Análise e Resultados} \label{sec:analysis}
 
-A saída de dados será gerada após as recomendações serem realizadas, ao final do processamento das informações será gerado um arquivo \textit{recommendations.txt} contendo os resultados. O arquivo de saída conterá 100 recomendações de itens não avaliados pelo usuário (N), resultando em um total de \textit{N} x 100 linhas, variando de acordo com a entrada de dados contendo os usuários. 
+Nesta seção será análisado a implementação realizada, a coleção indexada, como também os resultados obtidos nesse trabalho.
+Os testes e a implementação foram realizadas utilizando uma coleção cedida pelo Laboratório para Tratamento da Informação da Universidade Federal de Minas Gerais. A coleção utilizada possuí: 945.642 documentos; contendo o tamanho de 4,7GB \ref{tab:infobase}. Os experimentos foram realizados utilizando um \textbf{DELL XPS, Mid 2012; Intel Core i7-2630QM CPU @ 2.00GHz, L1d cache 32K, L1i cache 32K, L2 cache 256K, L3 cache 6144K; 6 GB 1333 MHz DDR3; Ubuntu 14.04.1 LTS}.
 
-\subsection{Testes de Implementação}
+\begin{table}
+\centering
+\begin{tabular}{|l|c|}
+\hline
+\multicolumn{1}{|c|}{Descrição}    & \multicolumn{1}{c|}{Valor} \\ \hline
+Tamanho da coleção                 & 4,0GB                      \\ \hline
+Quantidade de documentos           & 945.642 (100\%)            \\ \hline
+Quantidade de documentos removidos & 1.788 (0,18\%              \\ \hline
+Quantidade de documentos indexados & 943.854 (99,82\%)          \\ \hline
+Quantidade de termos indexados     & 5.213.979                  \\ \hline
+Tamanho do arquivo de índice       & 3,8GB                      \\ \hline
+Tamanho do arquivo de vocabulário  & 114,9MB                    \\ \hline
+\end{tabular}
+\caption{Informações da coleção utilizada}
+\label{tab:infobase}
+\end{table}
 
-Os testes e a implementação foram realizadas utilizando como entrada de dados os arquivos u.user, u.item, e ua.base disponibilizados no data set da MovieLens 100k\cite{movielens100k}. O tempo de processamento e geração de recomendação neste cenário foi de 185 segundos, utilizando um \textbf{MacBook Pro 13-inc, Mid 2012; 2,5 GHz Intel Core i5; 16 GB 1600 MHz DDR3; OS X 10.9.4 (13E28)}.
+A indexação dos documentos foi realizada ignorando documentos que possuem endereços terminados em \textbf{.pdf, .doc, .xls, .swf}. Desta maneira, qualquer documento encontrado na coleção que terminar com essas extensões, automaticamente seriam descartados. Como podemos análisar na Tabela~\ref{tab:infobase}, com apenas esse tratamento foram removidos 1.788 documentos do processo de indexação, representando uma diminuição de 0,18\% da coleção inicial. Esses documentos foram removidos devido a limitações do análisador de conteúdos (htmlcxx\ref{sssec:libs}) utilizado nesse trabalho.
 
-\subsection{Parametrização}
+A Tabela~\ref{tab:infobase} apresenta a quantidade de termos indexados a partir das configurações apresentadas nesse trabalho. Realizamos alguns testes no momento da análise dos termos, como o índice contemplando números, e removendo termos numéricos. Somente com essa alteração obtivemos uma variância de 200MB do tamanho na lista invertida, e 35MB no tamanho do vocabulário, como foi mostrado na Tabela~\ref{tab:varindex}.
 
-O aplicativo possuí alguns métodos e constantes que podem ser ajustados. Elas representam a \textit{Quantidade de Recomendações} que serão geradas, \textit{Alcance da Vizinhança} que será utilizada, \textit{Peso de Significância} utilizado para equilibrar o algoritmo de similaridade quando os usuários possuem poucas avaliações em comum. Os valores padrões utilizados são:
+\begin{table}[ht]
+\centering
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\multicolumn{1}{|c|}{Descrição} & \begin{tabular}[c]{@{}c@{}}Tempo de\\ Execução\end{tabular} & \begin{tabular}[c]{@{}c@{}}Quantidade de\\ Termos\end{tabular} & \begin{tabular}[c]{@{}c@{}}Tamanho do\\ Índice\end{tabular} & \begin{tabular}[c]{@{}c@{}}Tamanho do\\ Vocabulário\end{tabular} \\ \hline
+Indexação utilizada             & 1716 segundos                                               & 4.751.387                                                      & 3,9GB                                                       & 172,3MB                                                          \\ \hline
+Indexação com numerais          & 1763 segundos                                               & 6.287.294                                                      & 4GB                                                         & 207,4MB                                                          \\ \hline
+\end{tabular}
+\caption{Comparativo da criação da lista invertida}
+\label{tab:varindex}
+\end{table}
 
-\begin{description}
-\item[Quantidade de Recomendações] 100
-\item[Alcance da Vizinhança] 20
-\item[Peso de Significância] 50
-\end{description}
-Também foi implementado no \textit{Algoritmo de Correlação de Pearson} (Equação~\ref{eq:pearson}) a possibilidade de utilizar tanto a interseção da avaliação dos itens entre os usuários, como também a união desses itens, utilizando do valor 0 para os itens que não foram avaliados pelo usuário.
+Após a criação da lista invertida, o sistema realiza a ordenação externa dessa lista. A ordenação ocorre em três que são: (1) A divisão da lista invertida em vários arquivos de \textbf{10MB}; (2) a ordernação externa desses arquivos, realizando uma junção de no máximo \textbf{50 runs} por vez, utilizando uma esturtura \textit{heap} de \textbf{10MB} para ordenação desses registros; (3) e por fim a geração do vocabulário contendo a posição inicial de cada termo no índice ordenado. Esse algoritmo é similar ao algoritmo \textit{External Merge Sort}, assim a sua complexidade no pior caso se dá por \boldmath{$\log_{r} n/m$}, onde {$r$} é a quantidade das \textit{runs}; {$n$} a quantidade total de arquivos à serem ordenados; e {$m$} é a quantidade de registros que podem ser ordenados na memória\cite{ziviani2004projeto}.
 
-\subsection{Implementação}
+Esse processo foi realizado com as configurações descritas na Tabela~\ref{tab:order}, onde o tempo foram gerados \textit{382 arquivos}, e levando \textit{592 segundos} para ordenar uma lista de 3,8GB (Tabela~\ref{tab:order2}).
 
-De forma sucinta, os procedimentos realizados pelo aplicativo são: Leitura das Entradas de Dados e Mapeamento para Classes de Domínio do Aplicativo; Execução do Algoritmo de Similaridade entre os Usuários; Execução do Algoritmo de Predição de Avaliação para cada Item, de acordo com os Usuários Vizinhos; Resultado da Recomendação.
+\begin{table}[ht]
+\centering
+\begin{tabular}{|l|c|}
+\hline
+\multicolumn{1}{|c|}{Descrição}    & \multicolumn{1}{c|}{Valor} \\ \hline
+Quantidade de RUNs                 & 50                         \\ \hline
+Tamanho do HEAP                    & 10MB                       \\ \hline
+Tamanho dos Arquivos               & 10MB                       \\ \hline
+\end{tabular}
+\caption{Informações da coleção utilizada}
+\label{tab:order}
+\end{table}
 
-\section{Conclusão} \label{sec:conclusao}
+\begin{table}[ht]
+\centering
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\multicolumn{1}{|c|}{Descrição} & \begin{tabular}[c]{@{}c@{}}Tempo de\\ Execução\end{tabular} & \begin{tabular}[c]{@{}c@{}}Quantidade de\\ Termos\end{tabular} & \begin{tabular}[c]{@{}c@{}}Quantidade de\\ Arquivos\end{tabular}  \\ \hline
+Indexação utilizada             & 592 segundos & 4.751.387 & 385     \\ \hline
+Indexação com numerais          & 765 segundos & 6.287.294 & 405       \\ \hline
+\end{tabular}
+\caption{Comparativo da ordenação do índice invertido}
+\label{tab:order2}
+\end{table}
 
-Com esta pequena implementação e teste, pude notar a imensidão e as infinitas possibilidades que podem ser exploradas para recomendações tanto na Filtragem Colaborativa, como também na Baseada em Conteúdo.\\
-\indent Durante a implementação deste algoritmo, notei várias possibilidades e variantes que podem existir nos Sistemas de Recomendação, e que devem ser testadas e ajustadas para uma melhor recomendação. Existem várias melhorias a serem realizadas neste sistema, como métricas e avaliações afim de mensurar a eficiência na recomendação.\\
-\indent Assim, pretendo em versões futuras, realizar testes mais concretos e ajustes no algoritmo, tal como implementar a similaridade utilizando Cosseno ao invés de Pearson, implementar Recomendação Baseada em Item e realizar medições para comparação, com a finalidade de aprendizado e comportamento desses algoritmos.
 
-\newpage
+\section{Conclusão} \label{sec:conclusion}
+
+Com esta pequena implementação e testes, pude notar a imensidão e as infinitas possibilidades que podem ser exploradas para a melhoria da indexação dos documentos. É um grande desafio desse trabalho, a leitura e tratamento de documentos não estruturados, tentando melhorar a identificação dos termos e construção do índice.
+Existem várias melhorias a serem realizadas nesse trabalho, algumas dessas são: A melhoria na identificação dos termos para criação do índice; Validação das diferentes codificações de HTML; Reduzir a quantidade de arquivos excluídos da indexação; e alterações da forma de consulta de \textit{booleana} para \textit{vetorial}.
+
+Os objetivos propostos nesse trabalho foram atingidos, realizando assim uma indexação da coleção fornecida, tal como a recuperação dessa informação por meio de consultas \textit{booleanas}. Com ele, foi obtido um grande conhecimento sobre como funciona um sistema de busca, atravessando vários problemas e aplicações para a criação de um sistema simples de recuperação de documentos.
+
+Assim, pretendo em versões futuras, realizar testes mais concretos e ajustes no algoritmo, tal como implementar busca através de outros modelos estudados, realizar a compactação do índice e melhorias no tratamento dos termos dos documentos.
+
 \bibliographystyle{sbc}
 \bibliography{sbc-template}\nocite{*}
 
