@@ -6,11 +6,17 @@ Language: C++11
 ## Compilation
 
 ```bash
-make 
+cmake -G "Unix Makefiles"
+make
 ```
 
 ## Execution
 
 ```bash
+./bin/ir
 ```
+
+## Methods
+* index <directory> <index> [output] - initializes the index
+* search [directory] [inverted-index] [vocabulary] [documents] - initializes the search program
 
