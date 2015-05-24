@@ -38,6 +38,91 @@ void instructions() {
 	cout << "EXIT \t -to exit program" << endl << endl << endl;
 }
 
+void index(string command[]) {
+	if (command[2].empty())
+		command[2] = MAPFILE;
+
+	if (command[3].empty())
+		command[3] = OUTPUT_DIRECTORY;
+
+	//indexer
+	clock_t start = clock();
+	Indexer indexer(command[1], command[2], command[3]);
+	clock_t end = clock();
+	double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
+	cout << "Indexer finish. Time elapsed: " << elapsed_secs << endl;
+
+	//external sort
+	start = clock();
+	SortFile sort(command[3], "file.index");
+	end = clock();
+	elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
+	cout << "Sort finish. Time elapsed: " << elapsed_secs << endl;
+	//merge vocabulary
+	start = clock();
+	SortFile::mergeVocabulary("file.terms", "seek.terms", command[3]);
+	end = clock();
+	elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
+	cout << "Merge finish. Time elapsed: " << elapsed_secs << endl;
+}
+
+void search(string command[]) {
+	if (command[1].empty())
+		command[1] = OUTPUT_DIRECTORY;
+	if (command[2].empty())
+		command[2] = "inverted.index";
+	if (command[3].empty())
+		command[3] = "vocabulary.terms";
+	if (command[4].empty())
+		command[4] = "file.documents";
+
+	Searcher s(command[1], command[2], command[3], command[4]);
+
+	string query;
+	cout << "\n\n======================" << endl;
+	cout << "Welcome to IR Search by Jordan Silva." << endl;
+	cout << "To search more than one term, use AND or OR to concatenate them in the query." << endl;
+	cout << "Query example: 'Jordan AND Silva OR UFMG'" << endl;
+	cout << "This query will be search Jordan and Silva intersection, and will group with the UFMG results." << endl;
+	cout << "======================" << endl;
+	//cout << "Or you can type 'EXIT' to quit also.";
+
+	clock_t start = clock();
+	clock_t end;
+	do {
+		query = "";
+		cout << "\n\nWhat you would like to search? (Or type 'EXIT' to quit)" << endl;
+		getline(cin, query);
+		if (query == "EXIT")
+			break;
+
+		start = clock();
+		vector<string> results = s.search(query);
+		if (results.size() > 0) {
+			int size = 10;
+			if (results.size() < 10)
+				size = results.size();
+
+
+			end = clock();
+			double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
+
+			cout << results.size() << " documents were found.\n" << endl;
+			cout << "This query took " << elapsed_secs << " seconds to run." << endl;
+			cout << "Top " << size << " documents" << endl;
+			cout << "================" << endl;
+			for (int i = 0; i < size; i++)
+				cout << results[i] << endl;
+
+			//All documents
+			//for (std::vector<string>::iterator it = results.begin(); it != results.end(); ++it)
+			//	cout << *it << endl;
+		}
+		else
+			cout << "\nNo results! :(" << endl;
+	} while (query != "EXIT");
+}
+
 int main(int argc, const char * argv[]) {
 
 	string args;
@@ -60,91 +145,15 @@ int main(int argc, const char * argv[]) {
 			i++;
 		}
 
-		if (command[0] == "index") {
-			if (command[2].empty())
-				command[2] = MAPFILE;
-
-			if (command[3].empty())
-				command[3] = OUTPUT_DIRECTORY;
-
-			//indexer
-			clock_t start = clock();
-			Indexer indexer(command[1], command[2], command[3]);
-			clock_t end = clock();
-			double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
-			cout << "Indexer finish. Time elapsed: " << elapsed_secs << endl;
-
-			//external sort
-			start = clock();
-			SortFile sort(command[3], "file.index");
-			end = clock();
-			elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
-			cout << "Sort finish. Time elapsed: " << elapsed_secs << endl;
-			//merge vocabulary
-			start = clock();
-			SortFile::mergeVocabulary("file.terms", "seek.terms", command[3]);
-			end = clock();
-			elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
-			cout << "Merge finish. Time elapsed: " << elapsed_secs << endl;
-		} else if (command[0] == "search") {
-			if (command[1].empty())
-				command[1] = OUTPUT_DIRECTORY;
-			if (command[2].empty())
-				command[2] = "inverted.index";
-			if (command[3].empty())
-				command[3] = "vocabulary.terms";
-			if (command[4].empty())
-				command[4] = "file.documents";
-
-			Searcher s(command[1], command[2], command[3], command[4]);
-
-			string query;
-			cout << "\n\n======================" << endl;
-			cout << "Welcome to IR Search by Jordan Silva." << endl;
-			cout << "To search more than one term, use AND or OR to concatenate them in the query." << endl;
-			cout << "Query example: 'Jordan AND Silva OR UFMG'" << endl;
-			cout << "This query will be search Jordan and Silva intersection, and will group with the UFMG results." << endl;
-			cout << "======================" << endl;
-			//cout << "Or you can type 'EXIT' to quit also.";
-
-			clock_t start = clock();
-			clock_t end;
-			do {
-				query = "";
-				cout << "\n\nWhat you would like to search? (Or type 'EXIT' to quit)" << endl;
-				getline(cin, query);
-				if (query == "EXIT")
-					break;
-
-				start = clock();
-				vector<string> results = s.search(query);
-				if (results.size() > 0) {
-					int size = 10;
-					if (results.size() < 10)
-						size = results.size();
-
-
-					end = clock();
-					double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
-
-					cout << results.size() << " documents were found.\n" << endl;
-					cout << "This query took " << elapsed_secs << " seconds to run." << endl;
-					cout << "Top " << size << " documents" << endl;
-					cout << "================" << endl;
-					for (int i = 0; i < size; i++)
-						cout << results[i] << endl;
-
-					//All documents
-					//for (std::vector<string>::iterator it = results.begin(); it != results.end(); ++it)
-					//	cout << *it << endl;
-				}
-				else
-					cout << "\nNo results! :(" << endl;
-			} while (query != "EXIT");
-		} else if (command[0] == "EXIT")
+		if (command[0] == "index")
+			index(command);
+		else if (command[0] == "search")
+			search(command);			
+		else if (command[0] == "EXIT")
 			break;
 		else
 			cout << "Unknown command" << endl;
+
 	} while (command[0] == "EXIT");
 
 	return 0;

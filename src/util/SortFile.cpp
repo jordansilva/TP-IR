@@ -80,7 +80,7 @@ void SortFile::merge() {
 		//create merge file and assign to writer
 		createNewIndexFile("merged" + to_string(mQueueFiles.size()) + ".index");
 
-		WriterHelper* run;
+		WriterHelper* run = NULL;
 
 		unsigned int runsLeft = runs.size();
 		unsigned int currRun = 0;
