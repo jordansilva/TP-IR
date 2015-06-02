@@ -10,14 +10,13 @@
 Searcher::Searcher(string directory, string index, string vocabulary, string documents) {
 	//open index file
 	mIndex = new WriterHelper(directory + "/" + index, false);
-	cout << "Loading terms..." << endl;
+	cout << "Loading index..." << endl;
 
+    //open vocabulary
 	mDictionary = new Dictionary(directory + "/" + vocabulary);
-	cout << "Loading documents..." << endl;
+	cout << "Loading vocabulary..." << endl;
 
 	loadDocuments(directory + "/" + documents);
-	//open vocabulary
-
 }
 
 Searcher::~Searcher() {
@@ -31,12 +30,17 @@ bool Searcher::loadDocuments(string filename) {
 	if (writer.good()) {
 		string line;
 		unsigned int id = 0;
+        double pr = 0;
 		string url;
 
 		while (getline(writer, line)) {
 			istringstream ss(line);
-			ss >> id >> url;
-			mDocuments.insert(pair<unsigned int, string> (id, url));
+			ss >> id >> url >> pr;
+            IndexDocument* indexDocument = new IndexDocument();
+            indexDocument->setId(id);
+            indexDocument->setUrl(url);
+            indexDocument->setPageRank(pr);
+            mDocuments.insert(pair<unsigned int, IndexDocument*> (id, indexDocument));
 		}
 
 		return true;
@@ -44,7 +48,7 @@ bool Searcher::loadDocuments(string filename) {
 		return false;
 }
 
-vector<string> Searcher::search(string query) {
+vector<IndexDocument*> Searcher::search(string query) {
 
 	vector<unsigned int> documents;
 	int boolCondition = 0;
@@ -77,13 +81,11 @@ vector<string> Searcher::search(string query) {
 		}
 	}
 
-	vector<string> documentsNames;
+	vector<IndexDocument*> documentsNames;
 	for (unsigned int i = 0; i < documents.size(); i++) {
-		map<unsigned int, string>::iterator it = mDocuments.find(documents[i]);
+		map<unsigned int, IndexDocument*>::iterator it = mDocuments.find(documents[i]);
 
-		if (it == mDocuments.end())
-			documentsNames.push_back("error");
-		else
+		if (it != mDocuments.end())
 			documentsNames.push_back(it->second);
 	}
 

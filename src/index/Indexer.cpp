@@ -10,20 +10,28 @@
 Indexer::Indexer(string directory, string mapfile, string output) {
 	mOutputDirectory = output;
 	mWriter = new WriterHelper(mOutputDirectory + INDEX_NAME, true);
-	if (mWriter->isOpen())
-		execute(directory, mapfile);
-	else
-		cout << "File " << mOutputDirectory + INDEX_NAME << "doesn't exists!";
+    mWriterAnchor = new WriterHelper(mOutputDirectory + ANCHOR_INDEX, true);
+    process(directory, mapfile);
 }
 
 Indexer::~Indexer() {
 	delete mWriter;
+    delete mWriterAnchor;
+}
+
+void Indexer::process(string directory, string mapfile) {
+    if (mWriter->isOpen())
+        execute(directory, mapfile);
+    else
+        cout << "File " << mOutputDirectory + INDEX_NAME << "doesn't exists!";
 }
 
 //Indexer
 void Indexer::execute(string directory, string mapfile) {
 	CollectionReader reader(directory, mapfile);
 	ofstream mDocumentsWriter(mOutputDirectory + DOCUMENTS_NAME);
+    ofstream mDocumentsMetaWriter(mOutputDirectory + DOCUMENTS_META_NAME);
+    ofstream mDocumentsUrlWriter(mOutputDirectory + DOCUMENTS_URL);
 
 	//read documents
 	Document doc;
@@ -31,57 +39,107 @@ void Indexer::execute(string directory, string mapfile) {
 	int count = 0;
 
 	while (reader.getNextDocument(doc)) {
-		countNonValids++;
 		if (isValidDocument(doc.getURL())) {
 			count++;
 
+            //writing index terms
 			IndexDocument indexDocument(doc);
-			add(indexDocument, count);
-			mDocumentsWriter << count << " " << doc.getURL() << endl;
+			int sizeTerms = writeIndexTerms(indexDocument, count);
+            int sizeAnchor = writeAnchorTerms(indexDocument, count);
+            
+            //writing urls referenced
+            vector<string> urls = indexDocument.getUrlsReferenced();
+            vector<string>::iterator it = urls.begin();
+            vector<string>::iterator end = urls.end();
+            for (; it != end; ++it)
+                mDocumentsUrlWriter << count << " " << *it << endl;
+            
+            //writing id-docs
+			mDocumentsWriter << count << " " << doc.getURL() << " " << sizeTerms << endl;
+            
+            //cout << count << " " << indexDocument.getDescription() << " " << indexDocument.getTitle() << endl;
+            mDocumentsMetaWriter << count << indexDocument.getTitle() << endl;
 
 			//progress
 			if (count % 10000 == 0)
-				cout << "Documentos indexados: " << count << " |" << "size: "
+            {
+				cout << "Documentos indexados: " << count << " | " << " Quantidade de Termos: "
 						<< mDictionary.getTerms()->size() << endl;
+            }
 		}
+        else
+            countNonValids++;
 	}
 
-	cout << "countNonValids: " << countNonValids << endl;
-	cout << "countValids: " << count << endl;
+	cout << "Docs. Inválidos Encontrados: " << countNonValids << endl;
+	cout << "Docs. Válidos Encontrados: " << count << endl;
 	//Dump Vocabulary
 	dumpVocabulary();
+    mDocumentsUrlWriter.close();
+    mDocumentsMetaWriter.close();
 	mDocumentsWriter.close();
 }
 
-void Indexer::add(IndexDocument &document, int documentId) {
+int Indexer::writeIndexTerms(IndexDocument &document, int documentId) {
 	//Parser and get Terms from document
 	mParser.Process(document.getText());
 	unordered_map<string, vector<int> > terms = mParser.GetTerms();
 	unordered_map<string, vector<int> >::iterator it = terms.begin();
 	unordered_map<string, vector<int> >::iterator end = terms.end();
 
+    //writing terms
 	unsigned int termId = 0;
 	for (; it != end; ++it) {
-		termId = mDictionary.AddTerm(it->first);
+		termId = mDictionary.AddTerm(it->first, it->second.size());
 		IndexTerm indexTerm(termId, documentId, it->second.size(), it->second);
 		mWriter->Write(indexTerm);
 	}
-
+    
 	terms.clear();
+    return mParser.GetTerms().size();
+}
+
+int Indexer::writeAnchorTerms(IndexDocument &document, int documentId) {
+    //Parser and get Terms from document
+    mParser.Process(document.getAnchors());
+    unordered_map<string, vector<int> > terms = mParser.GetTerms();
+    unordered_map<string, vector<int> >::iterator it = terms.begin();
+    unordered_map<string, vector<int> >::iterator end = terms.end();
+    
+    //writing terms
+    unsigned int termId = 0;
+    for (; it != end; ++it) {
+        termId = mDictionaryAnchor.AddTerm(it->first, it->second.size());
+        IndexTerm indexTerm(termId, documentId, it->second.size(), it->second);
+        mWriterAnchor->Write(indexTerm);
+    }
+    
+    terms.clear();
+    return mParser.GetTerms().size();
 }
 
 void Indexer::dumpVocabulary() {
-	ofstream mVocabularyWriter;
-	mVocabularyWriter.open(mOutputDirectory + VOCABULARY_NAME);
-
+    //dump index vocabulary
+	ofstream mVocabularyWriter(mOutputDirectory + VOCABULARY_NAME);
 	unordered_map<string, Term>* terms = mDictionary.getTerms();
 	unordered_map<string, Term>::iterator it = terms->begin();
 	unordered_map<string, Term>::iterator end = terms->end();
 
 	for (; it != end; ++it)
-		mVocabularyWriter << it->first << " " << it->second.id << endl;
-
+        mVocabularyWriter << it->second.id << " " << it->first << " " << it->second.frequency << endl;
+    
 	mVocabularyWriter.close();
+    
+    //dump anchor vocabulary
+    ofstream mAnchorVocabularyWriter(mOutputDirectory + ANCHOR_TERMS);
+    terms = mDictionaryAnchor.getTerms();
+    it = terms->begin();
+    end = terms->end();
+    
+    for (; it != end; ++it)
+        mAnchorVocabularyWriter << it->second.id << " " << it->first << " " << it->second.frequency << endl;
+    
+    mAnchorVocabularyWriter.close();
 }
 
 bool Indexer::isValidDocument(string url) {
@@ -91,4 +149,3 @@ bool Indexer::isValidDocument(string url) {
 	else
 		return true;
 }
-

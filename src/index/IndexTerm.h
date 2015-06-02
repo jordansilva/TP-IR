@@ -18,11 +18,11 @@ class IndexTerm {
 public:
 	int run;
 	unsigned int termId;
-	int documentId;
+	unsigned int documentId;
 	int frequency;
 	vector<int> positions;
 
-	IndexTerm(unsigned int termId_, int documentId_, int termFrequency_, vector<int> positions_) {
+	IndexTerm(unsigned int termId_, unsigned int documentId_, int termFrequency_, vector<int> positions_) {
 		termId = termId_;
 		documentId = documentId_;
 		frequency = termFrequency_;

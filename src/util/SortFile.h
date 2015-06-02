@@ -39,17 +39,17 @@ class SortFile {
 	unsigned int mQueueSize;
 
 public:
-	SortFile(string directory, string index);
+	SortFile(string directory, string index, string filenameOutput);
 	virtual ~SortFile();
-	static void mergeVocabulary(string file, string fileSeek, string outputDirectory);
+	static void mergeVocabulary(string file, string fileSeek, string outputDirectory, string outputFile);
 
 private:
 	void createNewIndexFile(string filename);
 	void checkFileSize();
 
-	void execute(string index);
-	void split(string filename);
-	void merge();
+	void execute(string directory, string filename, string filenameOutput);
+	void split(string directory, string filename, string filenameOutput);
+	void merge(string filenameOutput);
 
 	int write(bool isLastMerge);
 	void dumpVector(vector<IndexTerm>* vectorTerms);

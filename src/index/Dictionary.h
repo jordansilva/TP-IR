@@ -21,9 +21,9 @@ public:
 	Dictionary();
 	Dictionary(string filename);
 	virtual ~Dictionary();
-	unsigned int AddTerm(string term);
-	unsigned int AddTerm(string term, unsigned int seek);
-	unsigned int AddTerm(unsigned int termId, string term, unsigned int seek);
+	unsigned int AddTerm(string term, unsigned int size);
+	unsigned int AddTerm(string term, unsigned int size, unsigned int seek);
+	unsigned int AddTerm(unsigned int termId, string term, unsigned int size, unsigned int seek);
 	unordered_map<string, Term>* getTerms();
 	Term* find(string term);
 	bool loadDictionary(string filename);

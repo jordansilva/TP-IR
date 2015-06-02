@@ -22,9 +22,9 @@ void TextParser::Process(string text) {
 	int pos = 0;
 
 	boost::to_lower(text);
-	removeAccents(text);
+    StringHelper::removeAccents(text);
 
-	char_separator<char> sep(",.\t\r\n\b\v\f \\");
+	char_separator<char> sep(",.\t\r\n\b\v\f \\ /");
 	tokenizer<char_separator<char> > tokens(text, sep);
 
 	for (tokenizer<char_separator<char> >::iterator it = tokens.begin(); it != tokens.end(); ++it) {
@@ -38,22 +38,9 @@ void TextParser::Process(string text) {
 	}
 }
 
-bool nonAlphaNumeric(char c) {
-	return !(isalpha(c) || isspace(c)); //isdigit(c)
-}
-
-void TextParser::removeNonAlphanumerics(std::string &str) {
-	str.erase(std::remove_if(str.begin(), str.end(), nonAlphaNumeric), str.end());
-}
-
-void TextParser::removeAccents(string &str) {
-	for (unsigned int i = 0; i < 92; i++)
-		boost::replace_all(str, rep[i], sub[i]);
-}
-
 void TextParser::AddTerm(string& token, int pos) {
 	//removeAccents(token); //memory problem
-	removeNonAlphanumerics(token);
+    StringHelper::removeNonAlphanumerics(token);
 	if (token.length() > 1) {
 		unordered_map<string, vector<int> >::iterator it = terms.find(token);
 		vector<int>* positions;

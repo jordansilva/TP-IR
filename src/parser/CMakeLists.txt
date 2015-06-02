@@ -6,4 +6,4 @@ file(GLOB parser_SRC
 
 
 ADD_LIBRARY( parser ${parser_SRC})
-target_link_libraries(parser)
+target_link_libraries(parser util)

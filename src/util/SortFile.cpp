@@ -7,12 +7,12 @@
 
 #include "SortFile.h"
 
-SortFile::SortFile(string directory, string filename) {
+SortFile::SortFile(string directory, string filename, string filenameOutput) {
 	mLastTermIdSeek = 0;
 	mWriter = NULL;
 	mOutputDirectory = directory;
 	mQueue = new priority_queue<IndexTerm, vector<IndexTerm> , greater<IndexTerm> > ();
-	execute(directory + "/" + filename);
+	execute(directory, filename, filenameOutput);
 }
 
 SortFile::~SortFile() {
@@ -20,19 +20,19 @@ SortFile::~SortFile() {
 	delete mQueue;
 }
 
-void SortFile::execute(string index) {
-	split(index);
-	merge();
-	remove(index.c_str());
+void SortFile::execute(string directory, string filename, string filenameOutput) {
+	split(directory, filename, filenameOutput);
+	merge(filenameOutput);
+	remove((directory + "/" + filename).c_str());
 }
 
-void SortFile::split(string filename) {
+void SortFile::split(string directory, string filename, string filenameOutput) {
 	//Start Writer
 	vector<IndexTerm> vectorTerms;
 	vectorTerms.reserve(FILE_SIZE / 16);
 	int vectorSize = 0;
 
-	WriterHelper indexFile(filename, false);
+	WriterHelper indexFile(directory + "/" + filename, false);
 	while (indexFile.HasNext()) {
 		//add term to vector
 		IndexTerm term = indexFile.ReadIndex();
@@ -41,7 +41,7 @@ void SortFile::split(string filename) {
 
 		if (vectorSize >= FILE_SIZE) {
 			//create new file to split
-			createNewIndexFile("split" + to_string(mQueueFiles.size()) + ".index");
+			createNewIndexFile(filenameOutput + "_split" + to_string(mQueueFiles.size()) + ".index");
 
 			//dump vector to file
 			dumpVector(&vectorTerms);
@@ -54,7 +54,7 @@ void SortFile::split(string filename) {
 
 	//check if terms vector is empty, if not, write vector in a new file
 	if (!vectorTerms.empty()) {
-		createNewIndexFile("split" + to_string(mQueueFiles.size()) + ".index");
+		createNewIndexFile(filenameOutput + "_split" + to_string(mQueueFiles.size()) + ".index");
 
 		//dump vector to file
 		dumpVector(&vectorTerms);
@@ -67,7 +67,7 @@ void SortFile::split(string filename) {
 	vectorTerms.shrink_to_fit();
 }
 
-void SortFile::merge() {
+void SortFile::merge(string filenameOutput) {
 
 	//create runs
 	vector<WriterHelper*> runs;
@@ -75,16 +75,17 @@ void SortFile::merge() {
 		runs.push_back(new WriterHelper(mOutputDirectory + mQueueFiles[runs.size()], false));
 	}
 
+    bool isLastMerge = runs.size() < RUN_SIZE;
+    
 	//if exists runs to merge
-	if (runs.size() > 1) {
+	if (runs.size() > 0) {
 		//create merge file and assign to writer
-		createNewIndexFile("merged" + to_string(mQueueFiles.size()) + ".index");
+		createNewIndexFile(filenameOutput + "_merged" + to_string(mQueueFiles.size()) + ".index");
 
 		WriterHelper* run = NULL;
 
 		unsigned int runsLeft = runs.size();
 		unsigned int currRun = 0;
-		bool isLastMerge = runs.size() < RUN_SIZE;
 		if (isLastMerge)
 			openVocabulary();
 
@@ -127,16 +128,16 @@ void SortFile::merge() {
 
 		if (isLastMerge) {
 			closeVocabulary();
-			rename(mWriter->getFilename().c_str(), (mOutputDirectory + "inverted.index").c_str());
+			rename(mWriter->getFilename().c_str(), (mOutputDirectory + filenameOutput + ".index").c_str());
 			remove(mWriter->getFilename().c_str());
 		}
 	}
 
 	//remove from file list
-	if (mQueueFiles.size() > runs.size()) {
+	if (!isLastMerge) {
 		vector<string> (mQueueFiles.begin() + runs.size(), mQueueFiles.end()).swap(mQueueFiles);
 		cout << mQueueFiles.size() << " remaining files." << endl;
-		merge();
+		merge(filenameOutput);
 	} else
 		mQueueFiles.clear();
 
@@ -205,7 +206,7 @@ void SortFile::writeVocabulary(unsigned int id, unsigned int seek) {
 
 //This method reads the vocabulary with description of term and id, and merges with term-id 
 //and seek position in inverted index
-void SortFile::mergeVocabulary(string file, string fileSeek, string outputDirectory) {
+void SortFile::mergeVocabulary(string file, string fileSeek, string outputDirectory, string outputFile) {
 	ifstream writer(outputDirectory + "/" + file);
 	ifstream writerSeek(outputDirectory + "/" + fileSeek);
 
@@ -213,12 +214,13 @@ void SortFile::mergeVocabulary(string file, string fileSeek, string outputDirect
 	string term;
 	unsigned int id = 0;
 	unsigned int seek = 0;
+    unsigned int frequency = 0;
 
 	unordered_map<int, Term*> *terms = new unordered_map<int, Term*> ();
 	while (getline(writer, line)) {
 		istringstream ss(line);
-		ss >> term >> id;
-		terms->insert(make_pair(id, new Term(id, term)));
+		ss >> id >> term >> frequency;
+		terms->insert(make_pair(id, new Term(id, frequency, term)));
 	}
 
 	id = 0;
@@ -226,7 +228,7 @@ void SortFile::mergeVocabulary(string file, string fileSeek, string outputDirect
 	line = "";
 
 	ofstream vocabularyWriter;
-	vocabularyWriter.open(outputDirectory + "/vocabulary.terms");
+	vocabularyWriter.open(outputDirectory + "/" + outputFile);
 
 	while (getline(writerSeek, line)) {
 		istringstream ss(line);
@@ -234,7 +236,7 @@ void SortFile::mergeVocabulary(string file, string fileSeek, string outputDirect
 
 		unordered_map<int, Term*>::iterator it = terms->find(id);
 		if (it != terms->end())
-			vocabularyWriter << it->second->term << " " << it->second->id << " " << seek << endl;
+			vocabularyWriter << it->second->id << " " << it->second->term << " " << it->second->frequency << " " << seek << endl;
 		else {
 			cout << id << endl;
 		}

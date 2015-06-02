@@ -17,24 +17,31 @@ public:
 
 	unsigned int id;
 	unsigned int indexSeek;
+    unsigned int frequency;
 	string term;
 
-	Term(unsigned int _id) {
+	Term() {}
+
+	Term(unsigned int _id, unsigned int _frequency) {
 		id = _id;
+        frequency = _frequency;
 	}
 
-	Term(unsigned int _id, unsigned int _indexSeek) {
+	Term(unsigned int _id, unsigned int _frequency, unsigned int _indexSeek) {
 		id = _id;
+        frequency = _frequency;
 		indexSeek = _indexSeek;
 	}
 
-	Term(unsigned int _id, string _term) {
+	Term(unsigned int _id, unsigned int _frequency, string _term) {
 		id = _id;
+        frequency = _frequency;
 		term = _term;
 	}
 
-	Term(unsigned int _id, string _term, unsigned int _indexSeek) {
+	Term(unsigned int _id, unsigned int _frequency, string _term, unsigned int _indexSeek) {
 		id = _id;
+        frequency = _frequency;
 		term = _term;
 		indexSeek = _indexSeek;
 	}

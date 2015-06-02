@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 2.8.4)
 project(ir)
 
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -std=c++11")
 
 IF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR
@@ -27,7 +26,8 @@ ENDIF()
 
 ADD_SUBDIRECTORY(src)
 
-add_executable(ir ir.cpp)
+add_executable(indexer index.cpp)
+add_executable(searcher searcher.cpp)
 
-target_link_libraries(ir z htmlcxx index parser reader search util)
-
+target_link_libraries(indexer z htmlcxx index parser reader search util)
+target_link_libraries(searcher z index parser search util)

@@ -22,7 +22,7 @@ class Searcher {
 private:
 	WriterHelper* mIndex;
 	Dictionary* mDictionary;
-	map<unsigned int, string> mDocuments;
+	map<unsigned int, IndexDocument*> mDocuments;
 	vector<Term*> getTermsFromVocabulary(string query);
 	vector<unsigned int> recoverIndexTerms(Term term);
 	bool loadDocuments(string filename);
@@ -31,7 +31,7 @@ private:
 
 public:
 	Searcher(string directory, string index, string vocabulary, string documents);
-	vector<string> search(string query);
+	vector<IndexDocument*> search(string query);
 	virtual ~Searcher();
 };
 
