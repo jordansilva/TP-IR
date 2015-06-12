@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Implementação de uma máquina de busca para a disciplina de recuperação da informação">
+    <meta name="author" content="Jordan Silva">
+
+    <title>jSearch</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="css/stylish-portfolio.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+    <!-- Header -->
+    <header id="top" class="header">
+        <div class="text-vertical-center" style="padding-top: -90px !important">
+            <h1>jSearch</h1>
+            <br/>
+            <form class="form col-lg-offset-3 col-lg-6">				
+			  	<div class="input-group input-group-lg has-feedback">
+				    <input id="search" name="search" type="text" class="form-control" placeholder="Pesquisar" />
+				    <span id="btnSearch" class="input-group-addon">
+				        <i class="fa fa-search"></i>
+				    </span>
+				</div>
+			</form>
+            <br>
+            
+        </div>
+    </header>
+
+    <!-- About -->
+    <section id="result" style="display: none">
+        <div class="container">
+            <div class="row">
+                <div id="result-box" class="col-lg-8">                    
+                </div>                
+            </div>
+            <!-- /.row -->
+        </div>
+        <!-- /.container -->
+    </section>
+
+  
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-10 col-lg-offset-1 text-center">
+                    <h4><strong>Jordan Silva</strong>
+                    </h4>
+                    <p>Universidade Federal de Minas Gerais<br>Belo Horizonte, BR</p>
+                    <ul class="list-unstyled">
+                        <li><i class="fa fa-envelope-o fa-fw"></i>  <a href="mailto:jordan@dcc.ufmg.br">jordan@dcc.ufmg.br</a>
+                        </li>
+                    </ul>
+                    <br>
+                    <ul class="list-inline">
+                        <li>
+                            <a href="http://www.facebook.com/silva.jordan"><i class="fa fa-facebook fa-fw fa-3x"></i></a>
+                        </li>
+                        <li>
+                            <a href="http://www.twitter.com/jordansilva"><i class="fa fa-twitter fa-fw fa-3x"></i></a>
+                        </li>                        
+                    </ul>
+                    <hr class="small">
+                    <p class="text-muted">Copyright &copy; jSearch 2015</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="js/bootstrap.min.js"></script>
+
+	<script src="js/jquery.endless-scroll.js"></script>
+    
+
+    <script type="text/javascript">
+    $(function() {
+
+    	var server = "http://localhost:8080/search";
+
+		$('#btnSearch').click(function(e) {
+			e.preventDefault();
+	  		request($('#search').val());
+	     });
+
+		$('body').on('submit', '.form', function(e) {
+			e.preventDefault();
+			request($('#search').val());
+		});
+
+		var currPage = 0;
+		var nextPage = 0;
+		var mQuery;
+
+		function request(query) {			
+			if (query)
+			{
+				mQuery = query;
+				var obj = { "page": nextPage, "vms": 1, "pr": 1, "at": 1, "query": mQuery };
+				var json = JSON.stringify(obj);
+
+				$.post(server, json, function(res){
+					console.log(res);
+	                $("#top").fadeOut();
+	                $("#result").fadeIn();
+	                constructResult(res);
+	            }, 'json');
+	        }
+		}
+
+		function constructResult(data) {
+			var hrefNextPage;
+			currPage = data.page;
+
+			var result = $('#result-box');			
+
+			for (var i = 0; i < data.result.length; i++) {
+				var item = data.result[i];
+				var title = "<h4>" + item.title + "</h4>";
+				var content = "<p><a href='" + item.url + "' target='_blank'>" + item.url + "</a></p>";
+				var box = "<div class='result-item'>" + title + "<br/>" + content + "</div>";
+				result.append(box);
+			};
+
+
+			if (data.totalPages > currPage)
+            {
+				nextPage = currPage + 1;            
+                $(window).endlessScroll({
+                  fireDelay: 500,
+                  ceaseFireOnEmpty: false,
+                  fireOnce: true,                  
+                  loader: '<div class="loading"><img src="img/hex-loader2.gif" alt="Loading" /><div>',
+                  callback: function(fireSequence, pageSequence, scrollDirection){
+                    if (scrollDirection == "next")
+                        requestNextPage();                    
+                  }
+                });
+            }
+		}
+
+		function requestNextPage(page) {
+			if (page)
+				nextPage = page;
+			console.log('callback');
+			request(mQuery);
+		}
+
+        // using default options
+        //$(window).endlessScroll();
+        // using some custom options
+        
+	});
+    </script>
+
+</body>
+
+</html>

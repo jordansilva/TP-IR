@@ -62,7 +62,7 @@ multimap<double, IndexDocument*, std::greater<double> > VectorModelSpace::search
         }
         
         //Cosine
-        similarity(&query);
+        order(&query);
         
         multimap<double, IndexDocument*, std::greater<double> > ordered(query.mIndexDocuments.begin(), query.mIndexDocuments.end());
         results = ordered;
@@ -106,7 +106,7 @@ void VectorModelSpace::recoverIndexTerms(Term term, Query::Query* query) {
     }
 }
 
-void VectorModelSpace::similarity(Query* query) {
+void VectorModelSpace::order(Query* query) {
     
     //given query weights
     unordered_map<unsigned int, double> queryWeight;
@@ -122,12 +122,9 @@ void VectorModelSpace::similarity(Query* query) {
             itQueryWeight->second = itQueryWeight->second * 2;
     }
     
-    //calculating cosine for each document
-    unordered_map<unsigned int, Query::QueryDocs*>::iterator it = query->mDocs.begin();
-    unordered_map<unsigned int, Query::QueryDocs*>::iterator end = query->mDocs.end();
-
+    //calculating cosine for each document    
     double product = 0;
-    for (; it != end; ++it) {
+    for (auto it = query->mDocs.begin(); it != query->mDocs.end(); ++it) {
         product = 0;
         
         unordered_map<unsigned int, double>::iterator dTerms = it->second->termWeight.begin();
@@ -137,9 +134,11 @@ void VectorModelSpace::similarity(Query* query) {
             product += queryWeight.find(dTerms->first)->second * dTerms->second;
         }
         
-        //product/sqrt(it->second->size * 1.0);
-        it->second->similarity = product;        
-        
+        //Com Normalização
+        //it->second->similarity = product/sqrt(it->second->size * 1.0);
+        //Sem normalização
+        it->second->similarity = product;
         query->mIndexDocuments.insert(make_pair(it->second->similarity, it->second->document));
+        query->mDocumentsWeight.insert(make_pair(it->first, product));
     }
 }

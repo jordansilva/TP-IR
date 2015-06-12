@@ -30,11 +30,11 @@ private:
     WriterHelper* mIndex;
     Dictionary* mDictionary;
     unordered_map<unsigned int, IndexDocument*> *mDocuments;
-    void recoverIndexTerms(Term term, Query::Query* query);
-    void similarity(Query* query);
+    void recoverIndexTerms(Term term, Query::Query* query);    
 public:
 	VectorModelSpace(string directory, string index, string vocabulary, unordered_map<unsigned int, IndexDocument*> *documents);
     multimap<double, IndexDocument*, std::greater<double> > search(Query::Query query);
+    static void order(Query* query);
 	virtual ~VectorModelSpace();
 };
 

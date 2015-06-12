@@ -7,6 +7,8 @@
 
 #include "PageRank.h"
 
+double mMaxPR;
+
 PageRank::PageRank() {
 }
 
@@ -109,10 +111,12 @@ void PageRank::calculate() {
     unsigned int numIterations = 0;
     
     double sumPR; // sum of current pagerank vector elements
-    double sizeCollection = mDocuments->size() * 1.0;
-
+    double sizeCollection = mDocuments->size() * 1.0;        
+    string mMaxUrl;
     // nodes
     while (diff > DEFAULT_CONVERGENCE && numIterations < DEFAULT_MAX_ITERATIONS) {
+        mMaxPR = 0;
+        mMaxUrl = "";
         diff = 0;
         map<unsigned int, IndexDocument*>::iterator it = mDocuments->begin();
         for (; it != mDocuments->end(); ++it) {
@@ -150,14 +154,36 @@ void PageRank::calculate() {
             if (currDiff > diff)
                 diff = currDiff;
 
+            if (sumPR > mMaxPR)
+            {
+                mMaxPR = sumPR;
+                mMaxUrl = it->second->getUrl();
+            }
+
             //cout << "dangling: " << danglingPR << endl;
             it->second->setPageRank(sumPR);
             //cout << it->first << ": " << it->second->getPageRank() << endl;
         }
-        
+
         cout.precision(15);
         cout << "Iteration " << numIterations << ": " << diff << endl;
         numIterations++;
+    }
+
+    cout.precision(20);
+    cout << "mURL: " << mMaxUrl << " mMaxPR: " << mMaxPR << endl; 
+}
+
+void PageRank::order(Query* query) {
+    
+    //calculating cosine for each document
+    unordered_map<unsigned int, Query::QueryDocs*>::iterator it = query->mDocs.begin();
+    unordered_map<unsigned int, Query::QueryDocs*>::iterator end = query->mDocs.end();
+
+    for (; it != end; ++it)
+    {
+        query->mIndexDocuments.insert(make_pair(it->second->document->getPageRank(), it->second->document));    
+        query->mDocumentsWeight.insert(make_pair(it->first, it->second->document->getPageRank()));
     }
 }
 
@@ -167,7 +193,7 @@ void PageRank::dump() {
     urlWriter.open(fDocuments);
 
     for(auto it = mDocuments->begin(); it != mDocuments->end(); ++it)
-        urlWriter << it->first << " " << it->second->getUrl() << " " << it->second->getSizeDocument() << " " << it->second->getPageRank() << endl;
+        urlWriter << it->first << " " << it->second->getUrl() << " " << it->second->getSizeDocument() << " " << it->second->getPageRank()/mMaxPR << endl;
 
     urlWriter.close();
 }

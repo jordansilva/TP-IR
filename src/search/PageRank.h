@@ -13,10 +13,10 @@
 #include <fstream>
 #include <stdlib.h>
 #include <boost/unordered_map.hpp>
+#include "Query.h"
 #include "../index/Dictionary.h"
 #include "../index/IndexDocument.h"
 #include "../util/WriterHelper.h"
-
 
 const double DEFAULT_ALPHA = 0.85;
 const double DEFAULT_DELTA = 0.15;
@@ -39,6 +39,7 @@ private:
 public:
 	PageRank();
     void execute(string documents, string references);
+    static void order(Query* query);
 	virtual ~PageRank();
 };
 

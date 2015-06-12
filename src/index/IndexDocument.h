@@ -14,6 +14,8 @@
 
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
+ #include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 #include "../libs/reader/CollectionReader.h"
 #include "../util/StringHelper.h"
 #include <htmlcxx/html/ParserDom.h>
@@ -25,6 +27,7 @@ using namespace htmlcxx;
 using namespace RICPNS;
 using namespace std;
 using namespace boost;
+using namespace boost::property_tree;
 
 class IndexDocument {
 public:
@@ -61,6 +64,7 @@ public:
     void addUrlsReferenced(string url);
     vector<string> getUrlsReferenced();
     void parserAnchorText(tree<HTML::Node> &dom, tree<HTML::Node>::iterator &it, std::string &anchorText);
+    string toJson();
 
 private:
 	bool IsScript(string item);
@@ -166,6 +170,21 @@ inline string IndexDocument::getText() {
 
 inline string IndexDocument::getAnchors() {
     return anchors;
+}
+
+inline string IndexDocument::toJson() {
+    ptree out;
+    out.put("id", getId());
+    out.put("url", getUrl());
+    out.put("title", getTitle());
+    out.put("description", getDescription());
+    out.put("keywords", getKeywordsAsString());
+    out.put("author", getAuthor());
+    out.put("pageRank", getPageRank());
+
+    std::ostringstream oss;
+    boost::property_tree::write_json(oss, out);
+    return oss.str();
 }
 
 #endif /* INDEXDOCUMENT_H_ */

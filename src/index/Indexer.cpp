@@ -65,6 +65,8 @@ void Indexer::execute(string directory, string mapfile) {
             {
 				cout << "Documentos indexados: " << count << " | " << " Quantidade de Termos: "
 						<< mDictionary.getTerms()->size() << endl;
+                cout << "Documentos indexados: " << count << " | " << " Quantidade de Ânchor Texts: "
+                        << mDictionaryAnchor.getTerms()->size() << endl;
             }
 		}
         else

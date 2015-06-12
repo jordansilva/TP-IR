@@ -47,6 +47,7 @@ public:
     unordered_map<unsigned int, QueryTerm*> mTerms;
     unordered_map<unsigned int, QueryDocs*> mDocs;
     unordered_multimap<double, IndexDocument*> mIndexDocuments;
+    unordered_map<unsigned int, double> mDocumentsWeight;
 
 	Query(string query);
 	virtual ~Query();

@@ -11,7 +11,6 @@
 #include <boost/algorithm/string.hpp>
 #include "src/util/SortFile.h"
 #include "src/index/Indexer.h"
-#include "src/search/Searcher.h"
 #include "src/search/PageRank.h"
 
 #define DIRECTORY "/Users/jordansilva/Documents/Jordan/Mestrado/Disciplinas/irCollection"
@@ -102,43 +101,50 @@ void sortAnchorIndex() {
 }
 
 void index(string dirIndex, string fileIndex) {
-	if (fileIndex.empty())
-		fileIndex = MAPFILE;
+	if (dirIndex.empty())
+	{
+		cout << "Diretório para indexação não informado" << endl;
+	}
+	else
+	{
+		if (fileIndex.empty())
+			fileIndex = MAPFILE;
 
-	//indexer
-	clock_t start = clock();
-    clock_t general = clock();
-    clock_t end = clock();
-    double elapsed_secs = 0;
+		//indexer
+		clock_t start = clock();
+	    clock_t general = clock();
+	    clock_t end = clock();
+	    double elapsed_secs = 0;
 
-    //TODO: Remove this line
-    dirIndex = DIRECTORY;
-    
-    
-    //index
-    cout << "Indexing..." << endl;
-	Indexer indexer(dirIndex, fileIndex, OUTPUT_DIRECTORY);
-	end = clock();
-	elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
-	cout << "Indexer finish. Time elapsed: " << elapsed_secs << endl;
-    
-    pageRank();        
-	sortInvertedIndex();
-	sortAnchorIndex();
-	
-	end = clock();
-	elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
-    cout << "Total time elapsed: " << elapsed_secs << endl;
+	    //TODO: Remove this line
+	    dirIndex = DIRECTORY;
+	    
+	    
+	    //index
+	    cout << "Indexing..." << endl;
+		Indexer indexer(dirIndex, fileIndex, OUTPUT_DIRECTORY);
+		end = clock();
+		elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
+		cout << "Indexer finish. Time elapsed: " << elapsed_secs << endl;
+	    
+	    pageRank();
+		sortInvertedIndex();
+		sortAnchorIndex();
+		
+		end = clock();
+		elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
+	    cout << "Total time elapsed: " << elapsed_secs << endl;
+	}
 }
 
 int main(int argc, const char * argv[]) {
 
 	string dirIndex;
 	string fileIndex;
-	if (argc > 0)
+	if (argc > 1)
 	{
 		dirIndex = argv[0];
-		if (argc > 1)
+		if (argc > 2)
 			fileIndex = argv[1];
 	}
 
